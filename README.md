@@ -101,6 +101,7 @@ hook 进程继承所在 pane 的 `$TMUX_PANE`，所以天然知道是哪个 agen
 | `@agents-next-key` | `Tab` | `prefix + <key>` 切到下一个 agent（可 `-r` 连按） |
 | `@agents-prev-key` | `BTab` | `prefix + <key>` 切到上一个 agent（BTab = Shift+Tab） |
 | `@agents-attention-key` | `Enter` | `prefix + <key>` 一键直达 needs-you 的 agent |
+| `@agents-goto-key` | `g` | `prefix + <key>` 然后按数字，直达第 N 个 agent |
 | `AGENT_PATTERN` (env) | `claude\|aider\|codex\|opencode\|gemini\|cursor-agent` | 识别 agent 进程的正则 |
 | `AGENT_WORKING_RE` (env) | `esc to interrupt` | 截屏兜底时「工作中」文本 |
 | `AGENT_BLOCKED_RE` (env) | 见脚本 | 截屏兜底时「需要你」文本 |
@@ -113,6 +114,7 @@ hook 进程继承所在 pane 的 `$TMUX_PANE`，所以天然知道是哪个 agen
 | `prefix + a` / 右键状态栏 | 弹窗菜单（有 fzf 用实时预览） |
 | `prefix + Tab` / `prefix + Shift+Tab` | 在 agent 间循环切下一个 / 上一个（可连按） |
 | `prefix + Enter` | **一键直达需要你的 agent** —— 只在 needs-you 间跳（可连按） |
+| `prefix + g` 然后数字 | **直达状态栏第 N 个 agent**（序号见状态栏，避开 `prefix+数字` 切窗口） |
 
 ## 工作原理
 

@@ -54,3 +54,11 @@ tmux bind -r "$PREV" run-shell "${CURRENT_DIR}/scripts/cycle.sh prev #{pane_id}"
 # prefix + Enter → 一键直达「需要你」的 agent（只在 needs-you 间跳，-r 可连按）
 ATTN="$(opt @agents-attention-key)"; [ -z "$ATTN" ] && ATTN=Enter
 tmux bind -r "$ATTN" run-shell "${CURRENT_DIR}/scripts/cycle.sh next #{pane_id} blocked"
+
+# prefix + g 然后按数字 → 直达状态栏里第 N 个 agent（序号见状态栏）
+# 用一次性 key-table，避开 prefix+数字（切窗口）的冲突
+GOTO="$(opt @agents-goto-key)"; [ -z "$GOTO" ] && GOTO=g
+tmux bind "$GOTO" switch-client -T agents_goto
+for i in 1 2 3 4 5 6 7 8 9; do
+  tmux bind -T agents_goto "$i" run-shell "${CURRENT_DIR}/scripts/goto.sh $i"
+done

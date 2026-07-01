@@ -21,9 +21,10 @@ fmt() { local s=${1:-0}; if [ "$s" -ge 3600 ]; then printf '%dh%dm' $((s/3600)) 
 width=$(tmux display-message -p '#{client_width}' 2>/dev/null); [ -z "$width" ] && width=120
 budget=$(( width - 28 - 32 )); [ "$budget" -lt 24 ] && budget=24
 
-used=0; hidden=0; buf=''
+used=0; hidden=0; buf=''; i=0
 while IFS=$'\t' read -r pid target status agent cwd wname cfull active start_epoch elapsed; do
   [ -z "$pid" ] && continue
+  i=$((i + 1))                       # 序号 = 直达用的 goto 序号（含被折叠的，保持对齐）
   num="${pid#%}"; winpane="${target#*:}"
   label="$cwd"; is_dup "$cwd" && label="$cwd#$winpane"
   [ "$pid" = "$FOCUS" ] && active=1 || active=0
@@ -55,7 +56,7 @@ while IFS=$'\t' read -r pid target status agent cwd wname cfull active start_epo
   else
     seg="#[range=user|$num]#[fg=#a6e3a1]✓ #[fg=#6c7086]$label · $state$sfx#[default]#[norange]   "
   fi
-  buf="$buf$seg"
+  buf="$buf#[fg=#585b70]$i #[default]$seg"
 done <<< "$out"
 
 printf '%s' "$buf"

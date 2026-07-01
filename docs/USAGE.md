@@ -117,6 +117,7 @@ tmux 选项（写在 `.tmux.conf`，放在加载插件之前）：
 | `@agents-next-key` | `Tab` | `prefix + <key>` 切到下一个 agent（可连按） |
 | `@agents-prev-key` | `BTab` | `prefix + <key>` 切到上一个 agent（`BTab` = Shift+Tab） |
 | `@agents-attention-key` | `Enter` | `prefix + <key>` 一键直达 needs-you 的 agent |
+| `@agents-goto-key` | `g` | `prefix + <key>` 然后按数字，直达第 N 个 agent |
 
 ```tmux
 set -g @agents-interval 1
@@ -124,6 +125,7 @@ set -g @agents-key a
 set -g @agents-next-key Tab
 set -g @agents-prev-key BTab
 set -g @agents-attention-key Enter
+set -g @agents-goto-key g
 ```
 
 环境变量（高级，调检测规则）：
@@ -145,6 +147,7 @@ set -g @agents-attention-key Enter
 | 在 fzf 弹窗里 `↑↓` | 预览不同 agent，回车跳转，esc 取消 |
 | `prefix + Tab` / `prefix + Shift+Tab` | 在 agent 间循环切下一个 / 上一个（按启动时间序，可连按） |
 | `prefix + Enter` | **一键直达需要你的 agent**：只在 needs-you 之间跳；没有则提示 |
+| `prefix + g` 然后按数字 | **直达状态栏第 N 个 agent**：状态栏每个 agent 前带序号；用一次性 key-table，不占用 `prefix+数字`（切窗口） |
 
 ---
 
