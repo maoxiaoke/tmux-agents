@@ -61,7 +61,8 @@ set -g status-format[0] '#[align=left]#{T:status-left}#[align=centre]#{agents}#[
       { "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh working" } ] }
     ],
     "PreToolUse": [
-      { "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh working" } ] }
+      { "matcher": "AskUserQuestion|ExitPlanMode",
+        "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh needs-you" } ] }
     ],
     "PostToolUse": [
       { "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh working" } ] }
@@ -83,9 +84,10 @@ set -g status-format[0] '#[align=left]#{T:status-left}#[align=centre]#{agents}#[
 ```
 
 各 hook 的作用：
-- `UserPromptSubmit` / `PreToolUse` → **working**（开始/继续干活）
-- `PostToolUse` → **working**。**这条是关键**：needs-you 就是靠「工具跑完」这一刻清除的 —— 你答完 AskUserQuestion、或批准权限后工具执行完，立刻从红色恢复 working。少了它，needs-you 会拖到下一次工具或 `Stop` 才消。
-- `Notification` `permission_prompt|elicitation_dialog` → **needs-you**；`elicitation_complete|elicitation_response` → **working**（MCP 答完即恢复）。**matcher 不能省**，否则 `idle_prompt`（空闲 60s）、`auth_success` 会被误判成红。
+- `UserPromptSubmit` → **working**（开始干活）
+- `PreToolUse` `AskUserQuestion|ExitPlanMode` → **needs-you**。**这条是关键**：AskUserQuestion（多选提问）/ ExitPlanMode（计划待批）是 claude 内部工具，不走权限、也不走 MCP，只能靠这个 matcher 标红。**不能给 PreToolUse 挂无 matcher 的 working**，会和它抢写。
+- `PostToolUse` → **working**。工具跑完（= 你答完提问 / 批准权限后工具执行完）立刻从红色恢复 working。
+- `Notification` `permission_prompt|elicitation_dialog` → **needs-you**；`elicitation_complete|elicitation_response` → **working**。**matcher 不能省**，否则 `idle_prompt`（空闲 60s）、`auth_success` 会被误判成红。
 - `Stop` / `StopFailure` → **idle**（正常结束 / API 报错结束都要归位，否则卡在 working）
 
 hook 进程继承所在 pane 的 `$TMUX_PANE`，所以天然知道是哪个 agent。
@@ -96,6 +98,8 @@ hook 进程继承所在 pane 的 `$TMUX_PANE`，所以天然知道是哪个 agen
 |---|---|---|
 | `@agents-interval` | `2` | 状态栏刷新秒数（影响 spinner/时长） |
 | `@agents-key` | `a` | `prefix + <key>` 唤起弹窗菜单 |
+| `@agents-next-key` | `Tab` | `prefix + <key>` 切到下一个 agent（可 `-r` 连按） |
+| `@agents-prev-key` | `BTab` | `prefix + <key>` 切到上一个 agent（BTab = Shift+Tab） |
 | `AGENT_PATTERN` (env) | `claude\|aider\|codex\|opencode\|gemini\|cursor-agent` | 识别 agent 进程的正则 |
 | `AGENT_WORKING_RE` (env) | `esc to interrupt` | 截屏兜底时「工作中」文本 |
 | `AGENT_BLOCKED_RE` (env) | 见脚本 | 截屏兜底时「需要你」文本 |
@@ -106,6 +110,7 @@ hook 进程继承所在 pane 的 `$TMUX_PANE`，所以天然知道是哪个 agen
 |---|---|
 | 左键点状态栏里的 agent | 跳到该 pane |
 | `prefix + a` / 右键状态栏 | 弹窗菜单（有 fzf 用实时预览） |
+| `prefix + Tab` / `prefix + Shift+Tab` | 在 agent 间循环切下一个 / 上一个（可连按） |
 
 ## 工作原理
 

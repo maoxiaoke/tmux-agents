@@ -103,16 +103,16 @@ footer=$(tmux capture-pane -p -t "$pid" | grep -v '^[[:space:]]*$' | tail -n 6)
 | Claude 事件 | matcher | 传参 | 落库 status |
 |---|---|---|---|
 | `UserPromptSubmit`（发消息，开始干活） | — | `working` | working |
-| `PreToolUse`（每次工具调用前） | — | `working` | working |
+| `PreToolUse`（claude 要问你 / 计划待批） | `AskUserQuestion\|ExitPlanMode` | `needs-you` | needs-you |
 | `PostToolUse`（每次工具跑完） | — | `working` | working |
 | `Notification`（需要你授权 / MCP 表单） | `permission_prompt\|elicitation_dialog` | `needs-you` | needs-you |
 | `Notification`（MCP 表单答完） | `elicitation_complete\|elicitation_response` | `working` | working |
 | `Stop`（一轮正常结束） | — | `idle` | idle |
 | `StopFailure`（回合因 API 报错结束） | — | `idle` | idle |
 
-> **`PostToolUse` 是 needs-you 的清除者(关键)**：needs-you 由 `Notification`(权限/MCP)或 AskUserQuestion 等设上，事件顺序是
-> `PreToolUse(working) → 权限/询问(needs-you) → 用户响应 → 工具执行完 → PostToolUse(working)`。
-> 清除必须发生在**工具跑完那一刻**（= 用户答完），所以靠 `PostToolUse`；只挂 `PreToolUse` 不够，needs-you 会拖到下次工具或 `Stop` 才消。
+> **AskUserQuestion / ExitPlanMode 只能靠 `PreToolUse` matcher 标红**：它们是 claude 内部工具，既不触发权限、也不触发 MCP `Notification`。所以「弹了多选题却不变红」的根因就是没挂这个 matcher。
+> **不要给 `PreToolUse` 挂无 matcher 的 working**：会和上面的 needs-you 抢写（同一事件多个 hook 执行顺序不保证）。working 已由 `UserPromptSubmit` + `PostToolUse` 覆盖。
+> **`PostToolUse` 是 needs-you 的清除者**：事件顺序 `PreToolUse(needs-you) → 用户响应 → 工具执行完 → PostToolUse(working)`，清除发生在**工具跑完那一刻**（= 用户答完）。
 > **`Notification` 必须带 matcher**：`permission_prompt`/`elicitation_dialog`=needs-you；`elicitation_complete`/`elicitation_response`=working；`idle_prompt`（空闲 60s）、`auth_success` 都不是，无 matcher 会误报。
 > **别用 `SubagentStop` 当主状态**：claude 的 recap/away-summary 会在主 turn 已结束后再发它，会把 idle 错误复活成 working（herdr 的 integration 也显式忽略它）。
 > **死会话残留**：hook store 文件在 agent 退出后会残留 `needs-you`/`working`，但 scan 的 `ps` 门禁只显示仍有 agent 进程的 pane，残留文件不影响显示。

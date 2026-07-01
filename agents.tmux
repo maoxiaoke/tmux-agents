@@ -44,3 +44,9 @@ POPUP="display-popup -E -w 90% -h 80% '${CURRENT_DIR}/scripts/pick.sh'"
 MENU="run-shell '${CURRENT_DIR}/scripts/menu.sh'"
 tmux bind "$KEY" if-shell 'command -v fzf >/dev/null' "$POPUP" "$MENU"
 tmux bind -n MouseDown1StatusRight if-shell 'command -v fzf >/dev/null' "$POPUP" "$MENU"
+
+# prefix + Tab / Shift+Tab → 在 agent 之间循环切换（-r 可连续按）
+NEXT="$(opt @agents-next-key)"; [ -z "$NEXT" ] && NEXT=Tab
+PREV="$(opt @agents-prev-key)"; [ -z "$PREV" ] && PREV=BTab
+tmux bind -r "$NEXT" run-shell "${CURRENT_DIR}/scripts/cycle.sh next #{pane_id}"
+tmux bind -r "$PREV" run-shell "${CURRENT_DIR}/scripts/cycle.sh prev #{pane_id}"

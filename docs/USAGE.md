@@ -73,7 +73,8 @@ set -g status-format[0] '#[align=left]#{T:status-left}#[align=centre]#{agents}#[
       { "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh working" } ] }
     ],
     "PreToolUse": [
-      { "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh working" } ] }
+      { "matcher": "AskUserQuestion|ExitPlanMode",
+        "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh needs-you" } ] }
     ],
     "PostToolUse": [
       { "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh working" } ] }
@@ -94,7 +95,8 @@ set -g status-format[0] '#[align=left]#{T:status-left}#[align=centre]#{agents}#[
 }
 ```
 
-> **`PostToolUse` 是「needs-you 恢复」的关键**：你答完问题 / 批准权限后，工具跑完那一刻 `PostToolUse` 触发 → 立刻从红色回到 working。少了它 needs-you 会拖到下次工具或 `Stop`。
+> **`PreToolUse` 的 matcher 是标红 AskUserQuestion / 计划审批的唯一途径**：这俩是 claude 内部工具，不走权限、不走 MCP，只能靠 `AskUserQuestion|ExitPlanMode` 标 needs-you。别给 PreToolUse 再挂无 matcher 的 working，会抢写。
+> **`PostToolUse` 是「needs-you 恢复」的关键**：你答完问题 / 批准权限后，工具跑完那一刻 → 立刻从红色回到 working。
 > **`Notification` 的 matcher 不能省**：`permission_prompt`/`elicitation_dialog` 是「需要你」，`elicitation_complete`/`elicitation_response` 是「答完了→working」；`idle_prompt`（空闲 60s）、`auth_success` 都不是，不加 matcher 会误报成红。
 > **`StopFailure`** 覆盖「回合因 API 报错结束」，否则卡在 working。
 
@@ -112,10 +114,14 @@ tmux 选项（写在 `.tmux.conf`，放在加载插件之前）：
 |---|---|---|
 | `@agents-interval` | `2` | 状态栏刷新秒数（影响 spinner 动画与时长 tick） |
 | `@agents-key` | `a` | `prefix + <key>` 唤起弹窗菜单 |
+| `@agents-next-key` | `Tab` | `prefix + <key>` 切到下一个 agent（可连按） |
+| `@agents-prev-key` | `BTab` | `prefix + <key>` 切到上一个 agent（`BTab` = Shift+Tab） |
 
 ```tmux
 set -g @agents-interval 1
 set -g @agents-key a
+set -g @agents-next-key Tab
+set -g @agents-prev-key BTab
 ```
 
 环境变量（高级，调检测规则）：
@@ -135,6 +141,7 @@ set -g @agents-key a
 | **左键**点状态栏里某个 agent | 跳到那个 pane |
 | `prefix + a`（或右键状态栏） | 弹出菜单：有 fzf → 左列表 + 右**实时预览**画面；无 fzf → 文本菜单 |
 | 在 fzf 弹窗里 `↑↓` | 预览不同 agent，回车跳转，esc 取消 |
+| `prefix + Tab` / `prefix + Shift+Tab` | 在 agent 间循环切下一个 / 上一个（按启动时间序，可连按） |
 
 ---
 
