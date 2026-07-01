@@ -64,7 +64,7 @@ set -g status-format[0] '#[align=left]#{T:status-left}#[align=centre]#{agents}#[
 
 不配也能用（自动截屏兜底判断），**但配了之后状态最准、最即时**（不依赖屏幕文案）。
 
-在 `~/.claude/settings.json` 的 `hooks` 里加三条（把路径换成你的安装路径）：
+在 `~/.claude/settings.json` 的 `hooks` 里加（把路径换成你的安装路径）：
 
 ```json
 {
@@ -72,15 +72,26 @@ set -g status-format[0] '#[align=left]#{T:status-left}#[align=centre]#{agents}#[
     "UserPromptSubmit": [
       { "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh working" } ] }
     ],
+    "PreToolUse": [
+      { "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh working" } ] }
+    ],
     "Notification": [
-      { "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh needs-you" } ] }
+      { "matcher": "permission_prompt|elicitation_dialog",
+        "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh needs-you" } ] }
     ],
     "Stop": [
+      { "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh idle" } ] }
+    ],
+    "StopFailure": [
       { "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh idle" } ] }
     ]
   }
 }
 ```
+
+> **`Notification` 的 matcher 不能省。** 它带通知类型：`permission_prompt`/`elicitation_dialog` 才是「需要你」；而 `idle_prompt`（输入空闲 60s）、`auth_success` 并不是，不加 matcher 会误报成红色。
+> `StopFailure` 覆盖「回合因 API 报错结束」的情况，否则会卡在 working。
+> `PreToolUse` 让「需要你」在你授权后能恢复成 working。
 
 **生效范围**：Claude Code 在**会话启动时**读 settings.json。已经在跑的会话不会立刻生效，**新开的 claude 会话**才会按 hook 上报。已有会话在此期间走截屏兜底。
 

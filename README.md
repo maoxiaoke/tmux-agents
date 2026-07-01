@@ -60,15 +60,27 @@ set -g status-format[0] '#[align=left]#{T:status-left}#[align=centre]#{agents}#[
     "UserPromptSubmit": [
       { "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh working" } ] }
     ],
+    "PreToolUse": [
+      { "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh working" } ] }
+    ],
     "Notification": [
-      { "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh needs-you" } ] }
+      { "matcher": "permission_prompt|elicitation_dialog",
+        "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh needs-you" } ] }
     ],
     "Stop": [
+      { "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh idle" } ] }
+    ],
+    "StopFailure": [
       { "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh idle" } ] }
     ]
   }
 }
 ```
+
+各 hook 的作用：
+- `UserPromptSubmit` / `PreToolUse` → **working**（开始/继续干活；PreToolUse 还能让「需要你」在授权后恢复成 working）
+- `Notification`（**必须带 matcher** `permission_prompt|elicitation_dialog`）→ **needs-you**。不加 matcher 会把 `idle_prompt`（空闲 60s）、`auth_success` 也误判成「需要你」。
+- `Stop` / `StopFailure` → **idle**（正常结束 / API 报错结束都要归位，否则卡在 working）
 
 hook 进程继承所在 pane 的 `$TMUX_PANE`，所以天然知道是哪个 agent。
 

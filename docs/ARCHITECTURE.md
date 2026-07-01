@@ -100,11 +100,17 @@ footer=$(tmux capture-pane -p -t "$pid" | grep -v '^[[:space:]]*$' | tail -n 6)
 
 `claude-hook.sh <state>` 被 Claude Code 在不同事件调用：
 
-| Claude 事件 | 传参 | 落库 status |
-|---|---|---|
-| `UserPromptSubmit`（用户发消息，开始干活） | `working` | working |
-| `Notification`（claude 需要你） | `needs-you` | needs-you |
-| `Stop`（一轮回答结束） | `idle` | idle |
+| Claude 事件 | matcher | 传参 | 落库 status |
+|---|---|---|---|
+| `UserPromptSubmit`（发消息，开始干活） | — | `working` | working |
+| `PreToolUse`（每次工具调用前，重申干活） | — | `working` | working |
+| `Notification`（需要你授权 / MCP 表单） | `permission_prompt\|elicitation_dialog` | `needs-you` | needs-you |
+| `Stop`（一轮正常结束） | — | `idle` | idle |
+| `StopFailure`（回合因 API 报错结束） | — | `idle` | idle |
+
+> **`Notification` 必须带 matcher**：它的 matcher 是通知类型。只有 `permission_prompt` / `elicitation_dialog` 是「需要你」；`idle_prompt`（输入空闲 60s）、`auth_success` 不是，无 matcher 会误报。
+> **`PreToolUse` 的作用**：授权/回答后 needs-you 能恢复成 working（否则要等到 `Stop` 才归位）。
+> **别用 `SubagentStop` 当主状态**：claude 的 recap/away-summary 会在主 turn 已结束后再发它，会把 idle 错误复活成 working（herdr 的 integration 也显式忽略它）。
 
 关键点：
 - **pane 定位**：hook 进程继承 claude 所在 pane 的 `$TMUX_PANE`，天然知道写哪个文件。无 `$TMUX_PANE`（如 herdr 自管的 PTY）→ 直接退出，不污染。
