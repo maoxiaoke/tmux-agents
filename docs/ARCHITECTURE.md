@@ -20,26 +20,7 @@
 
 ## 2. 架构总览
 
-```
-                        ┌─────────────────────────────────────────┐
-   Claude Code 进程      │  ~/.claude/settings.json  hooks          │
-   （在某个 tmux pane）  │   UserPromptSubmit → claude-hook.sh working
-        │               │   Notification     → claude-hook.sh needs-you
-        │  事件触发       │   Stop             → claude-hook.sh idle  │
-        ▼               └─────────────────────────────────────────┘
-   claude-hook.sh ──写──▶  hook store   ~/.cache/tmux-agents/hook/<pane>
-        │                      ▲  (status, since, last)
-        │ refresh-client -S    │ 读
-        ▼                      │
-   ┌──────────┐   调用    ┌────────┐  presence: tmux list-panes + ps
-   │ tmux     │──────────▶│ bar.sh │──▶ scan.sh ─┤ state: hook store 优先
-   │ status   │  #(...)   └────────┘             └ 兜底: capture-pane 底部
-   │ -format  │◀──────────  渲染文本（含 #[range=user|N] 可点击区域）
-   └──────────┘
-        │  点击 / prefix+a / 右键
-        ▼
-   jump.sh（跳转） / menu.sh（文本菜单） / pick.sh（fzf 预览）
-```
+![tmux-agents 架构与数据流](./assets/architecture.png)
 
 数据流分两条：
 - **写状态**：agent 的 hook 进程 → hook store（事件驱动，瞬时）。
@@ -71,6 +52,10 @@
 | `working` | 正在干活 | spinner `⠋⠙…` + 时长 `working 2m`（黄） |
 | `blocked` | **需要你**（等输入/确认） | `! 名字 · needs you`（红） |
 | `idle` | 空闲待命 | `✓ 名字 · idle`（绿勾 + 暗灰） |
+
+状态由 hook 事件驱动，生命周期如下：
+
+![agent 状态机](./assets/state-machine.png)
 
 **判定优先级（scan.sh）**：先看 hook store；store 没有才截屏兜底。
 **渲染优先级（bar.sh）**：`active` 高亮覆盖一切；其余按 store/兜底给出的 working/blocked/idle。
