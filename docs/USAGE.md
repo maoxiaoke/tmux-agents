@@ -116,12 +116,14 @@ tmux 选项（写在 `.tmux.conf`，放在加载插件之前）：
 | `@agents-key` | `a` | `prefix + <key>` 唤起弹窗菜单 |
 | `@agents-next-key` | `Tab` | `prefix + <key>` 切到下一个 agent（可连按） |
 | `@agents-prev-key` | `BTab` | `prefix + <key>` 切到上一个 agent（`BTab` = Shift+Tab） |
+| `@agents-attention-key` | `Enter` | `prefix + <key>` 一键直达 needs-you 的 agent |
 
 ```tmux
 set -g @agents-interval 1
 set -g @agents-key a
 set -g @agents-next-key Tab
 set -g @agents-prev-key BTab
+set -g @agents-attention-key Enter
 ```
 
 环境变量（高级，调检测规则）：
@@ -142,6 +144,7 @@ set -g @agents-prev-key BTab
 | `prefix + a`（或右键状态栏） | 弹出菜单：有 fzf → 左列表 + 右**实时预览**画面；无 fzf → 文本菜单 |
 | 在 fzf 弹窗里 `↑↓` | 预览不同 agent，回车跳转，esc 取消 |
 | `prefix + Tab` / `prefix + Shift+Tab` | 在 agent 间循环切下一个 / 上一个（按启动时间序，可连按） |
+| `prefix + Enter` | **一键直达需要你的 agent**：只在 needs-you 之间跳；没有则提示 |
 
 ---
 

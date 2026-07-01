@@ -100,6 +100,7 @@ hook 进程继承所在 pane 的 `$TMUX_PANE`，所以天然知道是哪个 agen
 | `@agents-key` | `a` | `prefix + <key>` 唤起弹窗菜单 |
 | `@agents-next-key` | `Tab` | `prefix + <key>` 切到下一个 agent（可 `-r` 连按） |
 | `@agents-prev-key` | `BTab` | `prefix + <key>` 切到上一个 agent（BTab = Shift+Tab） |
+| `@agents-attention-key` | `Enter` | `prefix + <key>` 一键直达 needs-you 的 agent |
 | `AGENT_PATTERN` (env) | `claude\|aider\|codex\|opencode\|gemini\|cursor-agent` | 识别 agent 进程的正则 |
 | `AGENT_WORKING_RE` (env) | `esc to interrupt` | 截屏兜底时「工作中」文本 |
 | `AGENT_BLOCKED_RE` (env) | 见脚本 | 截屏兜底时「需要你」文本 |
@@ -111,6 +112,7 @@ hook 进程继承所在 pane 的 `$TMUX_PANE`，所以天然知道是哪个 agen
 | 左键点状态栏里的 agent | 跳到该 pane |
 | `prefix + a` / 右键状态栏 | 弹窗菜单（有 fzf 用实时预览） |
 | `prefix + Tab` / `prefix + Shift+Tab` | 在 agent 间循环切下一个 / 上一个（可连按） |
+| `prefix + Enter` | **一键直达需要你的 agent** —— 只在 needs-you 间跳（可连按） |
 
 ## 工作原理
 
