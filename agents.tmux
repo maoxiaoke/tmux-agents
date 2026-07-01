@@ -11,6 +11,16 @@
 #   @agents-key        prefix 后唤起弹窗菜单的键（默认 a）
 set -f  # 关闭文件名通配，避免 status-format[0] 被当通配符
 
+# 最低版本守卫：range/多行 status 需 tmux ≥ 3.0（居中布局需 3.3，见 README）
+NEED=3.0
+HAVE=$(tmux -V 2>/dev/null | grep -oE '[0-9]+\.[0-9]+' | head -1)
+if [ -z "$HAVE" ] || ! awk -v h="$HAVE" -v n="$NEED" 'BEGIN{
+    split(h,H,".");split(n,N,".");
+    exit ((H[1]*100+H[2]) >= (N[1]*100+N[2])) ? 0 : 1 }'; then
+  tmux display-message "tmux-agents 需要 tmux ≥ ${NEED}（当前 ${HAVE:-未知}）" 2>/dev/null
+  exit 0
+fi
+
 CURRENT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SEG="#(${CURRENT_DIR}/scripts/bar.sh #{pane_id})"
 

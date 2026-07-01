@@ -16,7 +16,4 @@ if [ "$idx" -lt 1 ] || [ "$idx" -gt "$n" ]; then
 fi
 
 target="${panes[$((idx - 1))]}"
-sess=$(tmux display-message -p -t "$target" '#{session_name}' 2>/dev/null)
-[ -n "$sess" ] && tmux switch-client -t "$sess"
-tmux select-window -t "$target"
-tmux select-pane -t "$target"
+exec "$DIR/focus.sh" "$target"

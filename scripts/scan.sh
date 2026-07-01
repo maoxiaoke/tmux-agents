@@ -37,7 +37,7 @@ while IFS=$'\t' read -r pid sess win pane tty wname cpath active; do
   hf="$HOOK_DIR/$num"
   if [ -f "$hf" ]; then
     # —— 来自 agent hook 上报 ——
-    IFS=$'\t' read -r hstatus hsince hlast < "$hf"
+    IFS=$'\t' read -r hstatus hsince _ < "$hf"
     case "$hstatus" in
       working)          status=working; since=${hsince:-$now} ;;
       needs-you|blocked) status=blocked; since=$now ;;

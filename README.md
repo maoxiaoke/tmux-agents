@@ -21,7 +21,7 @@
 ### TPM（推荐）
 
 ```tmux
-set -g @plugin 'you/tmux-agents'
+set -g @plugin 'maoxiaoke/tmux-agents'
 ```
 
 在状态栏里放占位符 `#{agents}`，插件会替换成实际内容：
@@ -52,7 +52,16 @@ set -g status-format[0] '#[align=left]#{T:status-left}#[align=centre]#{agents}#[
 
 ## 让 Claude Code 上报状态（强烈推荐）
 
-不配也能用（截屏兜底），但配了 hooks 后状态**最准、最即时**。在 `~/.claude/settings.json` 加：
+不配也能用（截屏兜底），但配了 hooks 后状态**最准、最即时**。
+
+**一键安装（推荐）** —— 自动、安全地合并进 `~/.claude/settings.json`（幂等、自动备份、保留你已有的 hook）：
+
+```sh
+/path/to/tmux-agents/scripts/install-hooks.sh
+# 卸载： scripts/install-hooks.sh uninstall
+```
+
+<details><summary>或手动加（等价）</summary>
 
 ```json
 {
@@ -82,6 +91,7 @@ set -g status-format[0] '#[align=left]#{T:status-left}#[align=centre]#{agents}#[
   }
 }
 ```
+</details>
 
 各 hook 的作用：
 - `UserPromptSubmit` → **working**（开始干活）

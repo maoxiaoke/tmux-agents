@@ -8,6 +8,7 @@ if [ -z "$out" ]; then
   echo "没有正在运行的 agent"; sleep 1; exit 0
 fi
 
+# shellcheck disable=SC2034  # 部分列是 TSV 占位，不是每个都用
 list=$(printf '%s\n' "$out" | while IFS=$'\t' read -r pid target status agent cwd wname cfull active start_epoch elapsed; do
   case "$status" in working) dot='●';; blocked) dot='!';; *) dot='○';; esac
   printf '%s\t%s  %-8s  %-18s  %s\n' "$pid" "$dot" "$status" "$cwd" "$target"
@@ -23,7 +24,4 @@ sel=$(printf '%s\n' "$list" | fzf \
 
 [ -z "$sel" ] && exit 0
 pid="${sel%%$'\t'*}"
-sess=$(tmux display-message -p -t "$pid" '#{session_name}' 2>/dev/null)
-[ -n "$sess" ] && tmux switch-client -t "$sess"
-tmux select-window -t "$pid"
-tmux select-pane -t "$pid"
+exec "$DIR/focus.sh" "$pid"

@@ -25,7 +25,7 @@
 
 `~/.tmux.conf`：
 ```tmux
-set -g @plugin 'you/tmux-agents'
+set -g @plugin 'maoxiaoke/tmux-agents'
 ```
 然后 `prefix + I` 安装。
 
@@ -64,7 +64,14 @@ set -g status-format[0] '#[align=left]#{T:status-left}#[align=centre]#{agents}#[
 
 不配也能用（自动截屏兜底判断），**但配了之后状态最准、最即时**（不依赖屏幕文案）。
 
-在 `~/.claude/settings.json` 的 `hooks` 里加（把路径换成你的安装路径）：
+**一键安装（推荐）**，自动合并进 `~/.claude/settings.json`（幂等、自动备份、保留你已有的 hook 如 herdr）：
+
+```sh
+/path/to/tmux-agents/scripts/install-hooks.sh
+# 卸载： scripts/install-hooks.sh uninstall
+```
+
+<details><summary>或手动加（等价）——把路径换成你的安装路径</summary>
 
 ```json
 {
@@ -94,6 +101,7 @@ set -g status-format[0] '#[align=left]#{T:status-left}#[align=centre]#{agents}#[
   }
 }
 ```
+</details>
 
 > **`PreToolUse` 的 matcher 是标红 AskUserQuestion / 计划审批的唯一途径**：这俩是 claude 内部工具，不走权限、不走 MCP，只能靠 `AskUserQuestion|ExitPlanMode` 标 needs-you。别给 PreToolUse 再挂无 matcher 的 working，会抢写。
 > **`PostToolUse` 是「needs-you 恢复」的关键**：你答完问题 / 批准权限后，工具跑完那一刻 → 立刻从红色回到 working。
@@ -102,7 +110,7 @@ set -g status-format[0] '#[align=left]#{T:status-left}#[align=centre]#{agents}#[
 
 **生效范围**：Claude Code 在**会话启动时**读 settings.json。已经在跑的会话不会立刻生效，**新开的 claude 会话**才会按 hook 上报。已有会话在此期间走截屏兜底。
 
-> 已经在用其它 hook（如 herdr 的 SessionStart）？直接把上面三条**加进** `hooks` 即可，事件不同，互不冲突。
+> 已经在用其它 hook（如 herdr 的 SessionStart）？一键脚本会**原样保留**它们，只增删本插件自己的条目；手动加也不冲突（事件不同）。
 
 ---
 
@@ -191,7 +199,7 @@ set -g @agents-goto-key g
 
 ## 9. 卸载
 
-- 删掉 `.tmux.conf` 里的 `@plugin 'you/tmux-agents'`（或 `run-shell` 那行）和 `#{agents}` 占位。
-- 移除 `~/.claude/settings.json` 里加的三条 hook。
+- 删掉 `.tmux.conf` 里的 `@plugin 'maoxiaoke/tmux-agents'`（或 `run-shell` 那行）和 `#{agents}` 占位。
+- 移除 hooks：`scripts/install-hooks.sh uninstall`。
 - 可选清缓存：`rm -rf ~/.cache/tmux-agents`。
 - `tmux source-file ~/.tmux.conf`。

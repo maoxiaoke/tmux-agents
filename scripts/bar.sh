@@ -22,6 +22,7 @@ width=$(tmux display-message -p '#{client_width}' 2>/dev/null); [ -z "$width" ] 
 budget=$(( width - 28 - 32 )); [ "$budget" -lt 24 ] && budget=24
 
 used=0; hidden=0; buf=''; i=0
+# shellcheck disable=SC2034  # 部分列是 TSV 占位，不是每个都用
 while IFS=$'\t' read -r pid target status agent cwd wname cfull active start_epoch elapsed; do
   [ -z "$pid" ] && continue
   i=$((i + 1))                       # 序号 = 直达用的 goto 序号（含被折叠的，保持对齐）

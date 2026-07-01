@@ -9,13 +9,12 @@ if [ -z "$out" ]; then
 fi
 
 items=()
+# shellcheck disable=SC2034  # 部分列是 TSV 占位，不是每个都用
 while IFS=$'\t' read -r pid target status agent cwd wname cfull active start_epoch elapsed; do
   [ -z "$pid" ] && continue
   case "$status" in working) dot='●';; blocked) dot='!';; *) dot='○';; esac
-  sess="${target%%:*}"; sw="${target%.*}"
   label="$dot $cwd  $status  ($target)"
-  cmd="run-shell \"tmux switch-client -t '$sess'; tmux select-window -t '$sw'; tmux select-pane -t '$pid'\""
-  items+=("$label" "" "$cmd")
+  items+=("$label" "" "run-shell '$DIR/focus.sh $pid'")
 done <<< "$out"
 
 tmux display-menu -T "#[align=centre] 🤖 Agents " -x C -y C "${items[@]}"

@@ -1,10 +1,18 @@
 #!/usr/bin/env bash
 # Claude Code hook：把当前 agent 的状态上报给 tmux-agents store。
 # 在 ~/.claude/settings.json 的 hooks 里配置，参数为状态：
-#   UserPromptSubmit / PreToolUse → working
-#   Notification                  → needs-you
-#   Stop                          → idle
-new="${1:-idle}"
+#   UserPromptSubmit / PostToolUse           → working
+#   PreToolUse (AskUserQuestion|ExitPlanMode) → needs-you
+#   Notification (permission/elicitation)     → needs-you
+#   Stop / StopFailure                        → idle
+#
+# 状态词归一：对外接受 working|needs-you|idle（好记），内部一律存 working|blocked|idle，
+# 全链路（store/scan/bar/cycle/goto）只认这三个，避免 needs-you vs blocked 混用出 bug。
+case "${1:-idle}" in
+  working)            new=working ;;
+  needs-you|blocked)  new=blocked ;;
+  *)                  new=idle ;;
+esac
 
 # 不在 tmux 里就什么都不做（claude 进程继承所在 pane 的 $TMUX_PANE）
 [ -z "$TMUX_PANE" ] && { cat >/dev/null 2>&1; exit 0; }
