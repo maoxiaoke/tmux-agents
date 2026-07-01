@@ -40,6 +40,7 @@ except FileNotFoundError:
 except Exception as e:
     print(f"settings.json 解析失败，未改动：{e}", file=sys.stderr); sys.exit(1)
 
+before = json.dumps(data, sort_keys=True)  # 用于「无变化则不写」
 hooks = data.get("hooks", {}) or {}
 
 def is_ours(entry):
@@ -53,17 +54,24 @@ for ev in list(hooks):
 
 if action == "install":
     for ev, entries in SPEC.items():
-        arr = hooks.setdefault(ev, [])
+        ours = []
         for matcher, arg in entries:
             entry = {"hooks": [{"type": "command", "command": f"{hook} {arg}"}]}
             if matcher:
                 entry["matcher"] = matcher
-            arr.append(entry)
+            ours.append(entry)
+        # 确定性顺序：本插件条目在前，其它人的（herdr/melo…）原样保留在后 → 可幂等
+        hooks[ev] = ours + hooks.get(ev, [])
 
 if hooks:
     data["hooks"] = hooks
 elif "hooks" in data:
     del data["hooks"]
+
+# 无变化则不写、不备份（供插件加载时反复调用而不产生噪音）
+if json.dumps(data, sort_keys=True) == before:
+    print("无需改动（已是最新）")
+    sys.exit(0)
 
 if os.path.exists(path):
     bak = path + ".bak-" + time.strftime("%Y%m%d-%H%M%S")

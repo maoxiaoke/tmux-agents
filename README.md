@@ -20,21 +20,21 @@
 
 ### TPM（推荐）
 
+最简：两行 + `prefix + I`，agent 段自动挂到 `status-right`、hooks 自动装：
+
 ```tmux
 set -g @plugin 'maoxiaoke/tmux-agents'
+set -g @agents-auto-hooks on          # 自动装 Claude hooks（幂等）
 ```
 
-在状态栏里放占位符 `#{agents}`，插件会替换成实际内容：
+想**自己控制位置**，就在状态栏放 `#{agents}` 占位符（插件替换成实际内容）：
 
 ```tmux
-# 放右边
-set -g status-right '#{agents} | %H:%M '
-
-# 或放左边
-set -g status-left '#S #{agents}'
+set -g status-right '#{agents} | %H:%M '   # 放右边
+set -g status-left  '#S #{agents}'         # 或放左边
 ```
 
-按 `prefix + I` 安装。
+按 `prefix + I` 安装。装完**新开一个 claude 会话**即可上报状态。
 
 ### 手动
 
@@ -106,6 +106,8 @@ hook 进程继承所在 pane 的 `$TMUX_PANE`，所以天然知道是哪个 agen
 
 | 选项 | 默认 | 说明 |
 |---|---|---|
+| `@agents-auto` | `on` | 没写 `#{agents}` 占位时，自动挂到 `status-right`。设 `off` 则只认占位符 |
+| `@agents-auto-hooks` | `off` | 设 `on` → 插件加载时自动装 Claude hooks（幂等、无变化不写），省掉手跑脚本 |
 | `@agents-interval` | `2` | 状态栏刷新秒数（影响 spinner/时长） |
 | `@agents-key` | `a` | `prefix + <key>` 唤起弹窗菜单 |
 | `@agents-next-key` | `Tab` | `prefix + <key>` 切到下一个 agent（可 `-r` 连按） |
@@ -138,6 +140,16 @@ hook 进程继承所在 pane 的 `$TMUX_PANE`，所以天然知道是哪个 agen
 - tmux ≥ 3.0（多行/range 需 3.2+，居中需 3.3+）
 - bash、coreutils（macOS/Linux 均可）
 - 可选：`fzf`（实时预览弹窗）
+
+## 卸载
+
+一键清干净（移除 hooks + 缓存 + 运行期键位/状态栏改动，保留 herdr/melo 等其它 hook）：
+
+```sh
+/path/to/tmux-agents/scripts/uninstall.sh
+```
+
+之后手动删掉 `.tmux.conf` 里的 `@plugin 'maoxiaoke/tmux-agents'`（TPM 再 `prefix + alt+u` 清目录），重载即可。
 
 ## License
 

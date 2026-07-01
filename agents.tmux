@@ -27,12 +27,24 @@ SEG="#(${CURRENT_DIR}/scripts/bar.sh #{pane_id})"
 opt() { tmux show -gqv "$1" 2>/dev/null; }
 
 # 把用户 status 各处的 #{agents} 占位符替换成实际调用
+replaced=0
 for o in status-left status-right 'status-format[0]' 'status-format[1]' 'status-format[2]'; do
   val="$(opt "$o")"
   case "$val" in
-    *'#{agents}'*) tmux set -g "$o" "${val//'#{agents}'/$SEG}" ;;
+    *'#{agents}'*) tmux set -g "$o" "${val//'#{agents}'/$SEG}"; replaced=1 ;;
+    *"$CURRENT_DIR/scripts/bar.sh"*) replaced=1 ;;   # 已就位（防重复追加）
   esac
 done
+# 没写占位符也没就位 → 自动挂到 status-right 开头（@agents-auto off 可关）
+if [ "$replaced" = 0 ] && [ "$(opt @agents-auto)" != off ]; then
+  cur="$(opt status-right)"
+  tmux set -g status-right "$SEG $cur"
+fi
+
+# 可选：自动装 Claude Code hooks（@agents-auto-hooks on）。幂等 + 无变化不写，后台执行。
+if [ "$(opt @agents-auto-hooks)" = on ]; then
+  ( "$CURRENT_DIR/scripts/install-hooks.sh" >/dev/null 2>&1 & )
+fi
 
 # 刷新间隔（spinner / 时长 / 兜底状态）
 interval="$(opt @agents-interval)"; [ -z "$interval" ] && interval=2

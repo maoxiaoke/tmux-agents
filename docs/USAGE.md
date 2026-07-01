@@ -120,6 +120,8 @@ tmux 选项（写在 `.tmux.conf`，放在加载插件之前）：
 
 | 选项 | 默认 | 说明 |
 |---|---|---|
+| `@agents-auto` | `on` | 没写 `#{agents}` 占位时自动挂到 `status-right`；`off` 则只认占位符 |
+| `@agents-auto-hooks` | `off` | `on` → 插件加载时自动装 Claude hooks（幂等、无变化不写） |
 | `@agents-interval` | `2` | 状态栏刷新秒数（影响 spinner 动画与时长 tick） |
 | `@agents-key` | `a` | `prefix + <key>` 唤起弹窗菜单 |
 | `@agents-next-key` | `Tab` | `prefix + <key>` 切到下一个 agent（可连按） |
@@ -199,7 +201,12 @@ set -g @agents-goto-key g
 
 ## 9. 卸载
 
-- 删掉 `.tmux.conf` 里的 `@plugin 'maoxiaoke/tmux-agents'`（或 `run-shell` 那行）和 `#{agents}` 占位。
-- 移除 hooks：`scripts/install-hooks.sh uninstall`。
-- 可选清缓存：`rm -rf ~/.cache/tmux-agents`。
-- `tmux source-file ~/.tmux.conf`。
+**一键**（移除 hooks + 缓存 + 运行期键位/状态栏改动，保留 herdr/melo 等其它 hook）：
+
+```sh
+scripts/uninstall.sh
+```
+
+然后手动删掉 `.tmux.conf` 里的 `@plugin 'maoxiaoke/tmux-agents'`（或 `run-shell` 那行）和 `#{agents}` 占位 / `@agents-*` 选项；用 TPM 的话 `prefix + alt+u` 清目录；最后 `tmux source-file ~/.tmux.conf`。
+
+> 单独增删 hooks 也可以：`scripts/install-hooks.sh` / `scripts/install-hooks.sh uninstall`。
