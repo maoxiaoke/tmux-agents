@@ -103,14 +103,19 @@ footer=$(tmux capture-pane -p -t "$pid" | grep -v '^[[:space:]]*$' | tail -n 6)
 | Claude 事件 | matcher | 传参 | 落库 status |
 |---|---|---|---|
 | `UserPromptSubmit`（发消息，开始干活） | — | `working` | working |
-| `PreToolUse`（每次工具调用前，重申干活） | — | `working` | working |
+| `PreToolUse`（每次工具调用前） | — | `working` | working |
+| `PostToolUse`（每次工具跑完） | — | `working` | working |
 | `Notification`（需要你授权 / MCP 表单） | `permission_prompt\|elicitation_dialog` | `needs-you` | needs-you |
+| `Notification`（MCP 表单答完） | `elicitation_complete\|elicitation_response` | `working` | working |
 | `Stop`（一轮正常结束） | — | `idle` | idle |
 | `StopFailure`（回合因 API 报错结束） | — | `idle` | idle |
 
-> **`Notification` 必须带 matcher**：它的 matcher 是通知类型。只有 `permission_prompt` / `elicitation_dialog` 是「需要你」；`idle_prompt`（输入空闲 60s）、`auth_success` 不是，无 matcher 会误报。
-> **`PreToolUse` 的作用**：授权/回答后 needs-you 能恢复成 working（否则要等到 `Stop` 才归位）。
+> **`PostToolUse` 是 needs-you 的清除者(关键)**：needs-you 由 `Notification`(权限/MCP)或 AskUserQuestion 等设上，事件顺序是
+> `PreToolUse(working) → 权限/询问(needs-you) → 用户响应 → 工具执行完 → PostToolUse(working)`。
+> 清除必须发生在**工具跑完那一刻**（= 用户答完），所以靠 `PostToolUse`；只挂 `PreToolUse` 不够，needs-you 会拖到下次工具或 `Stop` 才消。
+> **`Notification` 必须带 matcher**：`permission_prompt`/`elicitation_dialog`=needs-you；`elicitation_complete`/`elicitation_response`=working；`idle_prompt`（空闲 60s）、`auth_success` 都不是，无 matcher 会误报。
 > **别用 `SubagentStop` 当主状态**：claude 的 recap/away-summary 会在主 turn 已结束后再发它，会把 idle 错误复活成 working（herdr 的 integration 也显式忽略它）。
+> **死会话残留**：hook store 文件在 agent 退出后会残留 `needs-you`/`working`，但 scan 的 `ps` 门禁只显示仍有 agent 进程的 pane，残留文件不影响显示。
 
 关键点：
 - **pane 定位**：hook 进程继承 claude 所在 pane 的 `$TMUX_PANE`，天然知道写哪个文件。无 `$TMUX_PANE`（如 herdr 自管的 PTY）→ 直接退出，不污染。

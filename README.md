@@ -63,9 +63,14 @@ set -g status-format[0] '#[align=left]#{T:status-left}#[align=centre]#{agents}#[
     "PreToolUse": [
       { "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh working" } ] }
     ],
+    "PostToolUse": [
+      { "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh working" } ] }
+    ],
     "Notification": [
       { "matcher": "permission_prompt|elicitation_dialog",
-        "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh needs-you" } ] }
+        "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh needs-you" } ] },
+      { "matcher": "elicitation_complete|elicitation_response",
+        "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh working" } ] }
     ],
     "Stop": [
       { "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh idle" } ] }
@@ -78,8 +83,9 @@ set -g status-format[0] '#[align=left]#{T:status-left}#[align=centre]#{agents}#[
 ```
 
 各 hook 的作用：
-- `UserPromptSubmit` / `PreToolUse` → **working**（开始/继续干活；PreToolUse 还能让「需要你」在授权后恢复成 working）
-- `Notification`（**必须带 matcher** `permission_prompt|elicitation_dialog`）→ **needs-you**。不加 matcher 会把 `idle_prompt`（空闲 60s）、`auth_success` 也误判成「需要你」。
+- `UserPromptSubmit` / `PreToolUse` → **working**（开始/继续干活）
+- `PostToolUse` → **working**。**这条是关键**：needs-you 就是靠「工具跑完」这一刻清除的 —— 你答完 AskUserQuestion、或批准权限后工具执行完，立刻从红色恢复 working。少了它，needs-you 会拖到下一次工具或 `Stop` 才消。
+- `Notification` `permission_prompt|elicitation_dialog` → **needs-you**；`elicitation_complete|elicitation_response` → **working**（MCP 答完即恢复）。**matcher 不能省**，否则 `idle_prompt`（空闲 60s）、`auth_success` 会被误判成红。
 - `Stop` / `StopFailure` → **idle**（正常结束 / API 报错结束都要归位，否则卡在 working）
 
 hook 进程继承所在 pane 的 `$TMUX_PANE`，所以天然知道是哪个 agent。

@@ -75,9 +75,14 @@ set -g status-format[0] '#[align=left]#{T:status-left}#[align=centre]#{agents}#[
     "PreToolUse": [
       { "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh working" } ] }
     ],
+    "PostToolUse": [
+      { "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh working" } ] }
+    ],
     "Notification": [
       { "matcher": "permission_prompt|elicitation_dialog",
-        "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh needs-you" } ] }
+        "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh needs-you" } ] },
+      { "matcher": "elicitation_complete|elicitation_response",
+        "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh working" } ] }
     ],
     "Stop": [
       { "hooks": [ { "type": "command", "command": "/path/to/tmux-agents/scripts/claude-hook.sh idle" } ] }
@@ -89,9 +94,9 @@ set -g status-format[0] '#[align=left]#{T:status-left}#[align=centre]#{agents}#[
 }
 ```
 
-> **`Notification` 的 matcher 不能省。** 它带通知类型：`permission_prompt`/`elicitation_dialog` 才是「需要你」；而 `idle_prompt`（输入空闲 60s）、`auth_success` 并不是，不加 matcher 会误报成红色。
-> `StopFailure` 覆盖「回合因 API 报错结束」的情况，否则会卡在 working。
-> `PreToolUse` 让「需要你」在你授权后能恢复成 working。
+> **`PostToolUse` 是「needs-you 恢复」的关键**：你答完问题 / 批准权限后，工具跑完那一刻 `PostToolUse` 触发 → 立刻从红色回到 working。少了它 needs-you 会拖到下次工具或 `Stop`。
+> **`Notification` 的 matcher 不能省**：`permission_prompt`/`elicitation_dialog` 是「需要你」，`elicitation_complete`/`elicitation_response` 是「答完了→working」；`idle_prompt`（空闲 60s）、`auth_success` 都不是，不加 matcher 会误报成红。
+> **`StopFailure`** 覆盖「回合因 API 报错结束」，否则卡在 working。
 
 **生效范围**：Claude Code 在**会话启动时**读 settings.json。已经在跑的会话不会立刻生效，**新开的 claude 会话**才会按 hook 上报。已有会话在此期间走截屏兜底。
 
