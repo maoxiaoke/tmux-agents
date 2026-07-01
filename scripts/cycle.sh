@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # 在 agent pane 之间循环切换。
 # 用法：cycle.sh <next|prev> [current_pane_id] [status_filter]
-#   status_filter：只在该状态的 agent 间跳（如 needs-you）。省略=所有 agent。
+#   status_filter：只在该状态的 agent 间跳（working|blocked|idle）。省略=所有 agent。
+#                  注意用 scan 的内部状态词 blocked（=needs-you），不是 hook 参数名。
 # 顺序与状态栏一致（按启动时间升序）。当前不在候选里时跳到第一个。
 DIR="$(cd "$(dirname "$0")" && pwd)"
 dir="${1:-next}"
@@ -19,8 +20,8 @@ done < <("$DIR/scan.sh" | sort -t$'\t' -k9,9n)
 
 n=${#panes[@]}
 if [ "$n" -eq 0 ]; then
-  [ "$filter" = needs-you ] && tmux display-message "没有需要你处理的 agent" \
-                            || tmux display-message "没有正在运行的 agent"
+  [ "$filter" = blocked ] && tmux display-message "没有需要你处理的 agent" \
+                          || tmux display-message "没有正在运行的 agent"
   exit 0
 fi
 

@@ -53,4 +53,4 @@ tmux bind -r "$PREV" run-shell "${CURRENT_DIR}/scripts/cycle.sh prev #{pane_id}"
 
 # prefix + Enter → 一键直达「需要你」的 agent（只在 needs-you 间跳，-r 可连按）
 ATTN="$(opt @agents-attention-key)"; [ -z "$ATTN" ] && ATTN=Enter
-tmux bind -r "$ATTN" run-shell "${CURRENT_DIR}/scripts/cycle.sh next #{pane_id} needs-you"
+tmux bind -r "$ATTN" run-shell "${CURRENT_DIR}/scripts/cycle.sh next #{pane_id} blocked"
