@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 360" width="1120" height="360">
+  <style>
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap');
+  </style>
+
+  <rect width="1120" height="360" fill="#f5f5f5"/>
+
+  <!-- Header -->
+  <text x="48" y="52" fill="#4f5d75" font-size="11" font-weight="500" font-family="'Geist Mono', ui-monospace, Menlo, monospace" letter-spacing="0.18em">TMUX-AGENTS · STATUS BAR</text>
+  <text x="48" y="92" fill="#2d3142" font-size="30" font-family="'Instrument Serif', Georgia, serif" letter-spacing="-0.02em">Who's working — and who needs you</text>
+  <text x="48" y="118" fill="#4f5d75" font-size="13" font-family="'Geist', system-ui, sans-serif">One tmux status line, across every window and session.</text>
+
+  <!-- ================= The status bar strip (dark, like a real tmux bar) ================= -->
+  <rect x="48" y="200" width="1024" height="60" rx="8" fill="#1e1e2e"/>
+
+  <!-- 1 · idle (green check) -->
+  <text x="66" y="235" fill="#585b70" font-size="13" font-family="'Geist Mono', monospace">1</text>
+  <path d="M82,231 l4,4 l8,-9" fill="none" stroke="#a6e3a1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="102" y="235" fill="#cdd6f4" font-size="13" font-weight="600" font-family="'Geist', sans-serif">api</text>
+  <circle cx="132" cy="230" r="1.4" fill="#6c7086"/>
+  <text x="140" y="235" fill="#6c7086" font-size="13" font-family="'Geist', sans-serif">idle</text>
+
+  <!-- 2 · working (yellow spinner ring) -->
+  <text x="286" y="235" fill="#585b70" font-size="13" font-family="'Geist Mono', monospace">2</text>
+  <circle cx="312" cy="230" r="6" fill="none" stroke="#f9e2af" stroke-width="2" stroke-dasharray="26 12" transform="rotate(-45 312 230)"/>
+  <text x="328" y="235" fill="#cdd6f4" font-size="13" font-weight="600" font-family="'Geist', sans-serif">web</text>
+  <circle cx="360" cy="230" r="1.4" fill="#6c7086"/>
+  <text x="368" y="235" fill="#6c7086" font-size="13" font-family="'Geist', sans-serif">working 1m12s</text>
+
+  <!-- 3 · needs-you (red pill) -->
+  <text x="516" y="235" fill="#585b70" font-size="13" font-family="'Geist Mono', monospace">3</text>
+  <rect x="536" y="212" width="176" height="36" rx="6" fill="#f38ba8"/>
+  <text x="552" y="235" fill="#1e1e2e" font-size="13" font-weight="700" font-family="'Geist', sans-serif">!</text>
+  <text x="566" y="235" fill="#1e1e2e" font-size="13" font-weight="600" font-family="'Geist', sans-serif">infra</text>
+  <circle cx="602" cy="230" r="1.4" fill="#1e1e2e"/>
+  <text x="610" y="235" fill="#1e1e2e" font-size="13" font-weight="600" font-family="'Geist', sans-serif">needs you</text>
+
+  <!-- 4 · active (blue pill, filled dot) -->
+  <text x="836" y="235" fill="#585b70" font-size="13" font-family="'Geist Mono', monospace">4</text>
+  <rect x="856" y="212" width="150" height="36" rx="6" fill="#89b4fa"/>
+  <circle cx="876" cy="230" r="4" fill="#1e1e2e"/>
+  <text x="890" y="235" fill="#1e1e2e" font-size="13" font-weight="600" font-family="'Geist', sans-serif">cli</text>
+  <circle cx="916" cy="230" r="1.4" fill="#1e1e2e"/>
+  <text x="924" y="235" fill="#1e1e2e" font-size="13" font-weight="600" font-family="'Geist', sans-serif">focused</text>
+
+  <!-- ================= Editorial callouts (max 2) ================= -->
+  <!-- focal: needs-you -->
+  <text x="1064" y="156" fill="#eb6c36" font-size="15" font-style="italic" font-family="'Instrument Serif', Georgia, serif" text-anchor="end">the one you actually act on — one key jumps here</text>
+  <path d="M700,164 Q660,184 626,206" fill="none" stroke="rgba(235,108,54,0.55)" stroke-width="1" stroke-dasharray="4,3"/>
+  <circle cx="626" cy="206" r="2.2" fill="#eb6c36"/>
+
+  <!-- neutral: active follows focus -->
+  <text x="860" y="316" fill="#2d3142" font-size="15" font-style="italic" font-family="'Instrument Serif', Georgia, serif">blue = the pane you're in</text>
+  <path d="M900,304 Q916,282 922,254" fill="none" stroke="rgba(45,49,66,0.40)" stroke-width="1" stroke-dasharray="4,3"/>
+  <circle cx="922" cy="254" r="2.2" fill="#2d3142"/>
+
+  <!-- tiny legend line under strip: numbers = jump targets -->
+  <text x="48" y="316" fill="#7a8399" font-size="11" font-family="'Geist Mono', monospace">prefix+g then a number → jump to that agent · prefix+Enter → next “needs you”</text>
+</svg>

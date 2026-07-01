@@ -3,9 +3,7 @@
 在 tmux 状态栏里常驻显示正在运行的 AI coding agent（Claude Code、aider…）及其状态，
 点击或弹窗即可跳到对应 pane。
 
-```
- ✓ api · idle    ⠴ web · working 1m12s    ! infra · needs you
-```
+![tmux-agents 状态栏：idle / working / needs-you / active 四态一览](./assets/statusbar.png)
 
 > 想了解内部原理 / 参与开发，见 [ARCHITECTURE.md](./ARCHITECTURE.md)。
 

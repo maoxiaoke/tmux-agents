@@ -5,10 +5,7 @@
 
 把 [herdr](https://herdr.dev) 那种「agent 仪表盘」体验做成一个**纯 tmux 插件** —— 零迁移、终端无关、可改、开源。
 
-```
- ✓ api · idle    ⠴ web · working 1m12s    ! infra · needs you
- └ 空闲(绿)      └ 工作中(spinner+时长)     └ 等你确认(红)
-```
+![tmux-agents 状态栏：idle / working / needs-you / active 四态一览](docs/assets/statusbar.png)
 
 - **跨 window / session 可见**：不管切到哪，状态栏都列出所有 agent
 - **状态准且即时**：Claude Code 通过 hooks 主动上报状态（非截屏猜测）；其它 agent 截屏兜底
