@@ -15,50 +15,60 @@
 
 ## 安装
 
-### TPM（推荐）
+> 前提：装了 **TPM**（Tmux Plugin Manager）。没装 / 不想用，见下方折叠项。
 
-最简：两行 + `prefix + I`，agent 段自动挂到 `status-right`、hooks 自动装：
+**① 在 `~/.tmux.conf` 加两行**（放在结尾那行 `run '~/.tmux/plugins/tpm/tpm'` 之前）：
 
 ```tmux
 set -g @plugin 'maoxiaoke/tmux-agents'
-set -g @agents-auto-hooks on          # 自动装 Claude hooks（幂等）
+set -g @agents-auto-hooks on
 ```
 
-想**自己控制位置**，就在状态栏放 `#{agents}` 占位符（插件替换成实际内容）：
+**② 按 `prefix + I` 装插件。**
+> `prefix` 是 tmux 前缀键，默认 `Ctrl+b`。也就是：按一下 `Ctrl+b`、松开，再按 `Shift+i`（大写 I）。
+
+**③ 完成。** 状态栏右侧立刻出现 agent 列表；之后**新开一个 claude 会话**，它就会实时上报 working / needs-you / idle。
+
+这两行各做一件事：
+- `@plugin …` → 装并加载插件（agent 列表默认自动挂到状态栏**最右**）。
+- `@agents-auto-hooks on` → 自动把状态上报 hooks 写进 `~/.claude/settings.json`（幂等、自动备份、**不动你已有的 hook**）。
+
+<details><summary>想自己决定 agent 列表放哪（默认最右）</summary>
+
+在状态栏放占位符 `#{agents}`，插件会把它替换成 agent 列表：
 
 ```tmux
-set -g status-right '#{agents} | %H:%M '   # 放右边
-set -g status-left  '#S #{agents}'         # 或放左边
+set -g status-right '#{agents} | %H:%M '   # 放右
+set -g status-left  '#S #{agents}'         # 放左
+# 放中间（需 tmux ≥ 3.3）：
+set -g status-format[0] '#[align=left]#{T:status-left}#[align=centre]#{agents}#[align=right]#{T:status-right}'
 ```
 
-按 `prefix + I` 安装。装完**新开一个 claude 会话**即可上报状态。
+放了占位符就按你的位置来；没放才自动挂最右（`set -g @agents-auto off` 可彻底关掉自动挂）。
+</details>
 
-### 手动
+<details><summary>没有 TPM / 不想用 TPM</summary>
+
+装 TPM：`git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm`，并确保 `.tmux.conf` **结尾**有 `run '~/.tmux/plugins/tpm/tpm'`。
+
+或者干脆不用 TPM —— 在 `.tmux.conf` 加一行（换成你 clone 的路径），hooks 单独跑一次即可：
 
 ```tmux
 run-shell /path/to/tmux-agents/agents.tmux
 ```
-
-### 居中（可选）
-
-居中需要自定义 `status-format`：
-
-```tmux
-set -g status-format[0] '#[align=left]#{T:status-left}#[align=centre]#{agents}#[align=right]#{T:status-right}'
-```
-
-## 让 Claude Code 上报状态（强烈推荐）
-
-不配也能用（截屏兜底），但配了 hooks 后状态**最准、最即时**。
-
-**一键安装（推荐）** —— 自动、安全地合并进 `~/.claude/settings.json`（幂等、自动备份、保留你已有的 hook）：
-
 ```sh
 /path/to/tmux-agents/scripts/install-hooks.sh
-# 卸载： scripts/install-hooks.sh uninstall
 ```
+</details>
 
-<details><summary>或手动加（等价）</summary>
+## hooks 细节（第 ① 步的 `@agents-auto-hooks on` 已自动装好）
+
+状态由 Claude 通过 hooks **主动上报** —— 准且即时（不配也能用，退回截屏兜底，但没这么准）。
+**只对新开的 claude 会话生效**；已在跑的会话此期间走截屏兜底。
+
+<details><summary>展开：写进 settings.json 的内容 + 各 hook 作用（想手动配 / 排查时看）</summary>
+
+`@agents-auto-hooks on` 等价于跑一次 `scripts/install-hooks.sh`（幂等、自动备份、保留你已有的 hook），往 `~/.claude/settings.json` 写入：
 
 ```json
 {
@@ -88,7 +98,6 @@ set -g status-format[0] '#[align=left]#{T:status-left}#[align=centre]#{agents}#[
   }
 }
 ```
-</details>
 
 各 hook 的作用：
 - `UserPromptSubmit` → **working**（开始干活）
@@ -98,6 +107,7 @@ set -g status-format[0] '#[align=left]#{T:status-left}#[align=centre]#{agents}#[
 - `Stop` / `StopFailure` → **idle**（正常结束 / API 报错结束都要归位，否则卡在 working）
 
 hook 进程继承所在 pane 的 `$TMUX_PANE`，所以天然知道是哪个 agent。
+</details>
 
 ## 选项
 

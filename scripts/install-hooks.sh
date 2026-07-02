@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 把 tmux-agents 的 Claude Code hooks 安全地装进 ~/.claude/settings.json。
-# 幂等（重复运行=升级，不会重复）、可卸载、写前自动备份、保留他人 hook（如 herdr）。
+# 幂等（重复运行=升级，不会重复）、可卸载、写前自动备份、保留他人已有的 hook。
 #
 # 用法：
 #   scripts/install-hooks.sh            安装/升级
@@ -60,7 +60,7 @@ if action == "install":
             if matcher:
                 entry["matcher"] = matcher
             ours.append(entry)
-        # 确定性顺序：本插件条目在前，其它人的（herdr/melo…）原样保留在后 → 可幂等
+        # 确定性顺序：本插件条目在前，其它人已有的原样保留在后 → 可幂等
         hooks[ev] = ours + hooks.get(ev, [])
 
 if hooks:

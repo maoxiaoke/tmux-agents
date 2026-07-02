@@ -9,7 +9,7 @@
 
 | 目标 | 取舍 |
 |---|---|
-| 寄生在 tmux 里，零迁移、终端无关 | 不做独立 app/daemon（那是 [herdr](https://herdr.dev) 的路子，拼不过也不该拼） |
+| 寄生在 tmux 里，零迁移、终端无关 | 不做独立 app/daemon（那是重得多的另一条路） |
 | 状态**准且即时** | 优先让 agent 主动上报（hooks），**不靠截屏猜**；截屏只做兜底 |
 | 纯 shell + tmux，可改可读 | 不引入运行时依赖（fzf 可选） |
 | 跨 macOS / Linux | `date` / `ps` 做兼容分支 |
@@ -114,11 +114,11 @@ footer=$(tmux capture-pane -p -t "$pid" | grep -v '^[[:space:]]*$' | tail -n 6)
 > **不要给 `PreToolUse` 挂无 matcher 的 working**：会和上面的 needs-you 抢写（同一事件多个 hook 执行顺序不保证）。working 已由 `UserPromptSubmit` + `PostToolUse` 覆盖。
 > **`PostToolUse` 是 needs-you 的清除者**：事件顺序 `PreToolUse(needs-you) → 用户响应 → 工具执行完 → PostToolUse(working)`，清除发生在**工具跑完那一刻**（= 用户答完）。
 > **`Notification` 必须带 matcher**：`permission_prompt`/`elicitation_dialog`=needs-you；`elicitation_complete`/`elicitation_response`=working；`idle_prompt`（空闲 60s）、`auth_success` 都不是，无 matcher 会误报。
-> **别用 `SubagentStop` 当主状态**：claude 的 recap/away-summary 会在主 turn 已结束后再发它，会把 idle 错误复活成 working（herdr 的 integration 也显式忽略它）。
+> **别用 `SubagentStop` 当主状态**：claude 的 recap/away-summary 会在主 turn 已结束后再发它，会把 idle 错误复活成 working。
 > **死会话残留**：hook store 文件在 agent 退出后会残留 `needs-you`/`working`，但 scan 的 `ps` 门禁只显示仍有 agent 进程的 pane，残留文件不影响显示。
 
 关键点：
-- **pane 定位**：hook 进程继承 claude 所在 pane 的 `$TMUX_PANE`，天然知道写哪个文件。无 `$TMUX_PANE`（如 herdr 自管的 PTY）→ 直接退出，不污染。
+- **pane 定位**：hook 进程继承 claude 所在 pane 的 `$TMUX_PANE`，天然知道写哪个文件。无 `$TMUX_PANE`（如自管 PTY 的多路复用器）→ 直接退出，不污染。
 - **working 时长保持**：若新状态 == 旧状态，保留 `since_epoch`（否则每次 `PreToolUse`/重复 working 都会重置计时）。
 - **即时刷新**：写完 `tmux refresh-client -S`，状态栏立刻更新。
 - **不读 stdin 会阻塞**：claude 把事件 JSON 写到 hook 的 stdin，脚本 `cat >/dev/null` 读掉。
@@ -197,8 +197,8 @@ bind -n MouseDown1Status if-shell -F "#{m:[0-9]*,#{mouse_status_range}}" \
 ## 12. 已知限制
 
 - 截屏兜底的状态判定是**启发式**，依赖 agent TUI 文案，版本变了要调正则。
-- 只追踪**直接跑在 tmux pane** 里的 agent；herdr 等自管 PTY 的 agent 看不到（也不应该，由它自己管）。
-- session/window 名含空格可能影响 `jump.sh` 的 target 解析（v0.1 未加引号加固）。
+- 只追踪**直接跑在 tmux pane** 里的 agent；自管 PTY 的工具（agent 不在 tmux pane 里）看不到，那类工具自己管。
+- session/window 名含空格：已用 `focus.sh`（session 名 + `window_id` + `pane_id`，不拼字符串）解决。
 - hook store 文件在 agent 退出后会残留（很小、pane id 不复用，无害；可加 SessionEnd 清理）。
 - 居中布局依赖自定义 `status-format`，tmux 需 ≥ 3.3。
 

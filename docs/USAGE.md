@@ -62,7 +62,7 @@ set -g status-format[0] '#[align=left]#{T:status-left}#[align=centre]#{agents}#[
 
 不配也能用（自动截屏兜底判断），**但配了之后状态最准、最即时**（不依赖屏幕文案）。
 
-**一键安装（推荐）**，自动合并进 `~/.claude/settings.json`（幂等、自动备份、保留你已有的 hook 如 herdr）：
+**一键安装（推荐）**，自动合并进 `~/.claude/settings.json`（幂等、自动备份、保留你已有的其它 hook）：
 
 ```sh
 /path/to/tmux-agents/scripts/install-hooks.sh
@@ -108,7 +108,7 @@ set -g status-format[0] '#[align=left]#{T:status-left}#[align=centre]#{agents}#[
 
 **生效范围**：Claude Code 在**会话启动时**读 settings.json。已经在跑的会话不会立刻生效，**新开的 claude 会话**才会按 hook 上报。已有会话在此期间走截屏兜底。
 
-> 已经在用其它 hook（如 herdr 的 SessionStart）？一键脚本会**原样保留**它们，只增删本插件自己的条目；手动加也不冲突（事件不同）。
+> 已经在用其它 hook？一键脚本会**原样保留**它们，只增删本插件自己的条目；手动加也不冲突（事件不同）。
 
 ---
 
@@ -199,7 +199,7 @@ set -g @agents-goto-key g
 
 ## 9. 卸载
 
-**一键**（移除 hooks + 缓存 + 运行期键位/状态栏改动，保留 herdr/melo 等其它 hook）：
+**一键**（移除 hooks + 缓存 + 运行期键位/状态栏改动，保留你已有的其它 hook）：
 
 ```sh
 scripts/uninstall.sh

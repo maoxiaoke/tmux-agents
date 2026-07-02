@@ -4,7 +4,7 @@
 set -eu
 DIR="$(cd "$(dirname "$0")" && pwd)"
 
-echo "1) 移除 Claude Code hooks（保留 herdr 等其它 hook）"
+echo "1) 移除 Claude Code hooks（保留其它已有 hook）"
 "$DIR/install-hooks.sh" uninstall || true
 
 echo "2) 清缓存 ~/.cache/tmux-agents"
