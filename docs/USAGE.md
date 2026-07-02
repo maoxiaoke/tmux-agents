@@ -13,7 +13,6 @@
 
 - **tmux ≥ 3.0**（多行/可点击需 3.2+，居中布局需 3.3+）
 - bash、coreutils（macOS / Linux 均可）
-- 可选：**fzf**（启用弹窗实时预览；没有则用文本菜单）
 
 ---
 
@@ -119,7 +118,6 @@ tmux 选项（写在 `.tmux.conf`，放在加载插件之前）：
 | `@agents-auto` | `on` | 没写 `#{agents}` 占位时自动挂；`off` 则只认占位符 |
 | `@agents-auto-hooks` | `off` | `on` → 插件加载时自动装 Claude hooks（幂等、无变化不写） |
 | `@agents-interval` | `2` | 状态栏刷新秒数（影响 spinner 动画与时长 tick） |
-| `@agents-key` | `a` | `prefix + <key>` 唤起弹窗菜单 |
 | `@agents-next-key` | `Tab` | `prefix + <key>` 切到下一个 agent（可连按） |
 | `@agents-prev-key` | `BTab` | `prefix + <key>` 切到上一个 agent（`BTab` = Shift+Tab） |
 | `@agents-attention-key` | `Enter` | `prefix + <key>` 一键直达 needs-you 的 agent |
@@ -127,7 +125,6 @@ tmux 选项（写在 `.tmux.conf`，放在加载插件之前）：
 
 ```tmux
 set -g @agents-interval 1
-set -g @agents-key a
 set -g @agents-next-key Tab
 set -g @agents-prev-key BTab
 set -g @agents-attention-key Enter
@@ -149,8 +146,6 @@ set -g @agents-goto-key g
 | 操作 | 行为 |
 |---|---|
 | **左键**点状态栏里某个 agent | 跳到那个 pane |
-| `prefix + a`（或右键状态栏） | 弹出菜单：有 fzf → 左列表 + 右**实时预览**画面；无 fzf → 文本菜单 |
-| 在 fzf 弹窗里 `↑↓` | 预览不同 agent，回车跳转，esc 取消 |
 | `prefix + Tab` / `prefix + Shift+Tab` | 在 agent 间循环切下一个 / 上一个（按启动时间序，可连按） |
 | `prefix + Enter` | **一键直达需要你的 agent**：只在 needs-you 之间跳；没有则提示 |
 | `prefix + g` 然后按数字 | **直达状态栏第 N 个 agent**：状态栏每个 agent 前带序号；用一次性 key-table，不占用 `prefix+数字`（切窗口） |
@@ -185,7 +180,7 @@ set -g @agents-goto-key g
 - 你若用 `--dangerously-skip-permissions`，权限弹窗不出现；但 claude 问问题/确认时仍会经 `Notification`。截屏兜底则依赖 `AGENT_BLOCKED_RE`，按你的 claude 文案调。
 
 **同名分不清**
-- 已自动补 pane 号 `apps#0.2`；要看画面用 `prefix + a` 的 fzf 预览。
+- 已自动补 pane 号 `apps#0.2`；`prefix + g` 按号直达对应 pane。
 
 **切 agent 后高亮慢半拍**
 - 焦点切换会触发 `refresh-client -S` 应即时；若仍慢，调小 `@agents-interval`。

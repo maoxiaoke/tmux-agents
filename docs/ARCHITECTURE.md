@@ -11,7 +11,7 @@
 |---|---|
 | 寄生在 tmux 里，零迁移、终端无关 | 不做独立 app/daemon（那是重得多的另一条路） |
 | 状态**准且即时** | 优先让 agent 主动上报（hooks），**不靠截屏猜**；截屏只做兜底 |
-| 纯 shell + tmux，可改可读 | 不引入运行时依赖（fzf 可选） |
+| 纯 shell + tmux，可改可读 | 不引入任何运行时依赖 |
 | 跨 macOS / Linux | `date` / `ps` 做兼容分支 |
 
 核心理念一句话：**presence 由 tmux/ps 决定，state 由 agent 上报决定。**
@@ -36,9 +36,8 @@
 | `scripts/scan.sh` | 聚合器 | 列出所有 pane，找出跑 agent 的，确定每个的 `status` 和 `working` 时长，输出 TSV |
 | `scripts/bar.sh` | 渲染器 | 调 `scan.sh`，排序/消歧/溢出折叠/上色，输出 tmux 状态栏文本 |
 | `scripts/claude-hook.sh` | Claude 适配器 | 作为 Claude Code hook 被调用，把状态写进 hook store |
-| `scripts/jump.sh` | 跳转 | 给定 pane 号，切 session→window→pane |
-| `scripts/menu.sh` | 文本菜单 | 无 fzf 时的 `display-menu` 回退 |
-| `scripts/pick.sh` | fzf 选择器 | `display-popup` 里跑 fzf，右侧实时预览 pane 画面 |
+| `scripts/jump.sh` `cycle.sh` `goto.sh` | 导航 | 点击跳转 / 循环 / 按序号直达，都经 `focus.sh` 切到目标 pane |
+| `scripts/focus.sh` | 切换 | session 名 + `window_id` + `pane_id` 切过去（不拼字符串，空格安全） |
 
 ---
 
@@ -212,7 +211,9 @@ scripts/
   scan.sh                   # 聚合（presence + state + 时长）
   bar.sh                    # 渲染
   claude-hook.sh            # Claude 状态上报
-  jump.sh menu.sh pick.sh   # 跳转 / 菜单 / fzf 预览
+  jump.sh cycle.sh goto.sh  # 导航（点击 / 循环 / 按号）
+  focus.sh                  # 切到目标 pane（空格安全）
+  install-hooks.sh uninstall.sh  # 装/卸 hooks
 docs/
   ARCHITECTURE.md           # 本文
   USAGE.md                  # 用户文档

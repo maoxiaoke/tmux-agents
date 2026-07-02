@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # tmux-agents —— 在 tmux 状态栏里显示正在运行的 AI coding agent（claude/aider/…）
-# 及其状态（active/working/needs-you/idle），点击/弹窗可跳转。
+# 及其状态（active/working/needs-you/idle），点击或快捷键跳转。
 #
 # 安装（TPM）：  set -g @plugin 'you/tmux-agents'
 # 在状态栏里放占位符 #{agents}，本插件会替换成实际内容。例如：
@@ -8,7 +8,7 @@
 #
 # 可选项：
 #   @agents-interval   状态栏刷新秒数（默认 2）
-#   @agents-key        prefix 后唤起弹窗菜单的键（默认 a）
+#   @agents-position   right（默认）| center | left
 set -f  # 关闭文件名通配，避免 status-format[0] 被当通配符
 
 # 最低版本守卫：range/多行 status 需 tmux ≥ 3.0（居中布局需 3.3，见 README）
@@ -71,13 +71,6 @@ tmux set-hook -g client-session-changed "refresh-client -S"
 tmux bind -n MouseDown1Status if-shell -F "#{m:[0-9]*,#{mouse_status_range}}" \
   "run-shell '${CURRENT_DIR}/scripts/jump.sh #{mouse_status_range}'" \
   "switch-client -t ="
-
-# prefix + key / 右键状态栏 → 弹窗菜单（有 fzf 用实时预览，否则文本菜单）
-KEY="$(opt @agents-key)"; [ -z "$KEY" ] && KEY=a
-POPUP="display-popup -E -w 90% -h 80% '${CURRENT_DIR}/scripts/pick.sh'"
-MENU="run-shell '${CURRENT_DIR}/scripts/menu.sh'"
-tmux bind "$KEY" if-shell 'command -v fzf >/dev/null' "$POPUP" "$MENU"
-tmux bind -n MouseDown1StatusRight if-shell 'command -v fzf >/dev/null' "$POPUP" "$MENU"
 
 # prefix + Tab / Shift+Tab → 在 agent 之间循环切换（-r 可连续按）
 NEXT="$(opt @agents-next-key)"; [ -z "$NEXT" ] && NEXT=Tab

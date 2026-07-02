@@ -10,12 +10,12 @@ No new app, no daemon. State is **pushed** by the agents themselves (Claude Code
 
 - **Cross-session** — every agent in one bar, no matter which pane you're in.
 - **Accurate, live state** — `working` (with elapsed time), `needs you`, `idle`; the focused pane is highlighted and bells never steal it.
-- **One keystroke to act** — jump to whoever *needs you*, cycle agents, or go to agent *N* by number. Click, or open an fzf preview popup.
+- **One keystroke to act** — jump to whoever *needs you*, cycle agents, go to agent *N* by number, or click the bar.
 - **Stable & tidy** — ordered by start time, duplicate names disambiguated, narrow bars fold gracefully.
 
 ## Requirements
 
-tmux ≥ 3.0 (≥ 3.3 for a centered layout) · bash · coreutils. Optional: [`fzf`](https://github.com/junegunn/fzf) for the preview popup.
+tmux ≥ 3.0 (≥ 3.3 for a centered layout) · bash · coreutils.
 
 ## Install
 
@@ -91,7 +91,6 @@ curl -fsSL https://raw.githubusercontent.com/maoxiaoke/tmux-agents/main/install.
 | `prefix + Enter` | Jump to the next agent that **needs you** |
 | `prefix + g` then a digit | Go to agent **N** (numbers shown in the bar) |
 | `prefix + Tab` / `prefix + S-Tab` | Cycle to next / previous agent |
-| `prefix + a` / right-click the bar | Picker (fzf preview if available) |
 | Left-click an agent | Jump to its pane |
 
 ## Configuration
@@ -107,7 +106,6 @@ set -g @agents-interval   1     # status refresh seconds (default: 2)
 | `@agents-auto` | `on` | Auto-mount when no `#{agents}` placeholder is set (`off` = placeholder only) |
 | `@agents-auto-hooks` | `off` | Install Claude Code hooks on plugin load (idempotent) |
 | `@agents-interval` | `2` | Status refresh interval (drives the spinner / elapsed time) |
-| `@agents-key` | `a` | `prefix + <key>` → picker |
 | `@agents-next-key` / `@agents-prev-key` | `Tab` / `BTab` | Cycle agents |
 | `@agents-attention-key` | `Enter` | Jump to a `needs-you` agent |
 | `@agents-goto-key` | `g` | `prefix + <key>` then a digit → agent N |
