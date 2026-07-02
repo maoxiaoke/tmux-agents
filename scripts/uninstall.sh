@@ -16,7 +16,7 @@ if command -v tmux >/dev/null 2>&1 && tmux info >/dev/null 2>&1; then
   for k in a Tab BTab Enter g; do tmux unbind "$k" 2>/dev/null || true; done
   tmux unbind -T root MouseDown1Status 2>/dev/null || true
   tmux unbind -T root MouseDown1StatusRight 2>/dev/null || true
-  tmux unbind -T agents_goto 1 2>/dev/null || true   # 表整体随会话消失，无需逐个
+  for n in 1 2 3 4 5 6 7 8 9; do tmux unbind -T agents_goto "$n" 2>/dev/null || true; done
   for h in after-select-pane after-select-window client-session-changed; do
     tmux set-hook -gu "$h" 2>/dev/null || true
   done
