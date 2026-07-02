@@ -53,9 +53,9 @@ fi
 
 cat <<EOF
 
-✅ 安装完成（装在 $DIR）
+✅ 安装完成（装在 ${DIR}）
    • 在 tmux 里状态栏右侧应已出现 agent 列表（不在 tmux 就下次进入生效）。
    • 新开一个 claude 会话即可上报 working / needs-you / idle。
    • 自定义位置 / 键位见 README。
-   卸载： $DIR/scripts/uninstall.sh
+   卸载： ${DIR}/scripts/uninstall.sh
 EOF
