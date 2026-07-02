@@ -15,60 +15,20 @@
 
 ## 安装
 
-> 前提：装了 **TPM**（Tmux Plugin Manager）。没装 / 不想用，见下方折叠项。
+装两样：**For Agent**（让 Claude 上报状态）+ **插件**（把状态显示在状态栏，选「有 TPM」或「没有 TPM」）。
 
-**① 在 `~/.tmux.conf` 加两行**（放在结尾那行 `run '~/.tmux/plugins/tpm/tpm'` 之前）：
+### For Agent — 让 Claude 上报状态
 
-```tmux
-set -g @plugin 'maoxiaoke/tmux-agents'
-set -g @agents-auto-hooks on
-```
+让每个 claude 把 working / needs-you / idle **主动上报**给状态栏（这是状态准且即时的关键；不配也能跑，退回截屏猜，但没这么准）。一条命令：
 
-**② 按 `prefix + I` 装插件。**
-> `prefix` 是 tmux 前缀键，默认 `Ctrl+b`。也就是：按一下 `Ctrl+b`、松开，再按 `Shift+i`（大写 I）。
-
-**③ 完成。** 状态栏右侧立刻出现 agent 列表；之后**新开一个 claude 会话**，它就会实时上报 working / needs-you / idle。
-
-这两行各做一件事：
-- `@plugin …` → 装并加载插件（agent 列表默认自动挂到状态栏**最右**）。
-- `@agents-auto-hooks on` → 自动把状态上报 hooks 写进 `~/.claude/settings.json`（幂等、自动备份、**不动你已有的 hook**）。
-
-<details><summary>想自己决定 agent 列表放哪（默认最右）</summary>
-
-在状态栏放占位符 `#{agents}`，插件会把它替换成 agent 列表：
-
-```tmux
-set -g status-right '#{agents} | %H:%M '   # 放右
-set -g status-left  '#S #{agents}'         # 放左
-# 放中间（需 tmux ≥ 3.3）：
-set -g status-format[0] '#[align=left]#{T:status-left}#[align=centre]#{agents}#[align=right]#{T:status-right}'
-```
-
-放了占位符就按你的位置来；没放才自动挂最右（`set -g @agents-auto off` 可彻底关掉自动挂）。
-</details>
-
-<details><summary>没有 TPM / 不想用 TPM</summary>
-
-装 TPM：`git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm`，并确保 `.tmux.conf` **结尾**有 `run '~/.tmux/plugins/tpm/tpm'`。
-
-或者干脆不用 TPM —— 在 `.tmux.conf` 加一行（换成你 clone 的路径），hooks 单独跑一次即可：
-
-```tmux
-run-shell /path/to/tmux-agents/agents.tmux
-```
 ```sh
-/path/to/tmux-agents/scripts/install-hooks.sh
+/path/to/tmux-agents/scripts/install-hooks.sh      # 换成你 clone 的路径
 ```
-</details>
 
-## hooks 细节（第 ① 步的 `@agents-auto-hooks on` 已自动装好）
+幂等、自动备份、保留你已有的 hook；卸载 `install-hooks.sh uninstall`。**只对之后新开的 claude 会话生效。**
+> 走下面「有 TPM」并开 `@agents-auto-hooks on`，这步会自动帮你做，**不用手跑**。
 
-状态由 Claude 通过 hooks **主动上报** —— 准且即时（不配也能用，退回截屏兜底，但没这么准）。
-**只对新开的 claude 会话生效**；已在跑的会话此期间走截屏兜底。
-
-<details><summary>展开：写进 settings.json 的内容 + 各 hook 作用（想手动配 / 排查时看）</summary>
-
-`@agents-auto-hooks on` 等价于跑一次 `scripts/install-hooks.sh`（幂等、自动备份、保留你已有的 hook），往 `~/.claude/settings.json` 写入：
+<details><summary>它往 settings.json 写了什么 + 各 hook 作用（手动配 / 排查时看）</summary>
 
 ```json
 {
@@ -99,14 +59,49 @@ run-shell /path/to/tmux-agents/agents.tmux
 }
 ```
 
-各 hook 的作用：
 - `UserPromptSubmit` → **working**（开始干活）
-- `PreToolUse` `AskUserQuestion|ExitPlanMode` → **needs-you**。**这条是关键**：AskUserQuestion（多选提问）/ ExitPlanMode（计划待批）是 claude 内部工具，不走权限、也不走 MCP，只能靠这个 matcher 标红。**不能给 PreToolUse 挂无 matcher 的 working**，会和它抢写。
-- `PostToolUse` → **working**。工具跑完（= 你答完提问 / 批准权限后工具执行完）立刻从红色恢复 working。
+- `PreToolUse` `AskUserQuestion|ExitPlanMode` → **needs-you**。**关键**：这俩是 claude 内部工具，不走权限、也不走 MCP，只能靠这个 matcher 标红。别给 `PreToolUse` 再挂无 matcher 的 working，会抢写。
+- `PostToolUse` → **working**。工具跑完（= 你答完提问 / 批准权限后）立刻从红色恢复。
 - `Notification` `permission_prompt|elicitation_dialog` → **needs-you**；`elicitation_complete|elicitation_response` → **working**。**matcher 不能省**，否则 `idle_prompt`（空闲 60s）、`auth_success` 会被误判成红。
-- `Stop` / `StopFailure` → **idle**（正常结束 / API 报错结束都要归位，否则卡在 working）
+- `Stop` / `StopFailure` → **idle**（正常 / API 报错结束都归位）
 
-hook 进程继承所在 pane 的 `$TMUX_PANE`，所以天然知道是哪个 agent。
+hook 进程继承所在 pane 的 `$TMUX_PANE`，所以知道是哪个 agent。
+</details>
+
+### 有 TPM（推荐）
+
+`~/.tmux.conf` 加两行（放在结尾 `run '~/.tmux/plugins/tpm/tpm'` 之前），再按 `prefix + I`：
+
+```tmux
+set -g @plugin 'maoxiaoke/tmux-agents'
+set -g @agents-auto-hooks on          # 顺带把上面的「For Agent」自动做了
+```
+
+> `prefix` 是 tmux 前缀键，默认 `Ctrl+b`：按一下 `Ctrl+b` 松开，再按 `Shift+i`（大写 I）。
+
+装完状态栏右侧立刻出现 agent 列表。
+
+### 没有 TPM
+
+想用 TPM：`git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm`，并确保 `.tmux.conf` 结尾有 `run '~/.tmux/plugins/tpm/tpm'`，然后回到上面「有 TPM」。
+
+不想用 TPM：`.tmux.conf` 加一行（换成你 clone 的路径），重载即可（hooks 用上面「For Agent」那条单独跑）：
+
+```tmux
+run-shell /path/to/tmux-agents/agents.tmux
+```
+
+<details><summary>自定义 agent 列表在状态栏的位置（默认最右）</summary>
+
+放占位符 `#{agents}`，插件替换成 agent 列表：
+
+```tmux
+set -g status-right '#{agents} | %H:%M '   # 放右
+set -g status-left  '#S #{agents}'         # 放左
+set -g status-format[0] '#[align=left]#{T:status-left}#[align=centre]#{agents}#[align=right]#{T:status-right}'  # 居中(tmux ≥ 3.3)
+```
+
+放了占位符就按你的位置来；没放才自动挂最右（`set -g @agents-auto off` 关掉自动挂）。
 </details>
 
 ## 选项
