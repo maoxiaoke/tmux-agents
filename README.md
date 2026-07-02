@@ -65,6 +65,17 @@ Agents report state through Claude Code hooks (installed automatically above, or
 
 The agent list mounts at the right of `status-right` by default. To place it yourself, drop the `#{agents}` placeholder into `status-left`, `status-right`, or `status-format`.
 
+## Update
+
+Re-running the one-liner pulls the latest, re-syncs the hooks, and reloads — it's the update command too:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/maoxiaoke/tmux-agents/main/install.sh | bash
+```
+
+- **TPM:** `prefix + U`, then reload tmux. (Hooks re-sync on reload if `@agents-auto-hooks on`; otherwise run `scripts/install-hooks.sh`.)
+- **Manual clone:** `git -C ~/.tmux/plugins/tmux-agents pull && tmux source-file ~/.tmux.conf`.
+
 ## Keybindings
 
 `prefix` is your tmux prefix (default `Ctrl+b`).
