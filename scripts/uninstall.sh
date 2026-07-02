@@ -33,12 +33,17 @@ if command -v tmux >/dev/null 2>&1 && tmux info >/dev/null 2>&1; then
   tmux refresh-client -S 2>/dev/null || true
 fi
 
+# 4) 移除 install.sh 写入的标记块（若是一键安装的）
+TCONF="${TMUX_CONF:-$HOME/.tmux.conf}"
+if [ -f "$TCONF" ] && grep -qF "# >>> tmux-agents >>>" "$TCONF"; then
+  echo "4) 从 $TCONF 移除 tmux-agents 标记块"
+  cp "$TCONF" "$TCONF.bak-$(date +%Y%m%d-%H%M%S)"
+  sed '/# >>> tmux-agents >>>/,/# <<< tmux-agents <<</d' "$TCONF" > "$TCONF.tmp" && mv "$TCONF.tmp" "$TCONF"
+fi
+
 cat <<EOF
 
-✅ 运行期改动已撤销、hooks 已移除、缓存已清。
-还需你手动做两件（无法安全代改配置文件）：
-  • 从 ~/.tmux.conf 删掉：set -g @plugin 'maoxiaoke/tmux-agents'（或 run-shell .../agents.tmux）
-    以及你放的 #{agents} 占位 / @agents-* 选项
-  • 若用 TPM：prefix + alt+u 清理插件目录
-然后 tmux source-file ~/.tmux.conf（或重开 tmux）。
+✅ 卸载完成：hooks / 缓存 / 运行期改动 / tmux.conf 标记块 都已清理。
+若你是【手动】接入的（TPM @plugin 或自己写的 run-shell / #{agents} 占位 / @agents-* 选项），
+那几行需你自己删；用 TPM 再 prefix + alt+u 清目录。最后 tmux source-file ~/.tmux.conf。
 EOF

@@ -15,7 +15,25 @@
 
 ## 安装
 
-装两样：**For Agent**（让 Claude 上报状态）+ **插件**（把状态显示在状态栏，选「有 TPM」或「没有 TPM」）。
+**一键（不需要 TPM）** —— clone + 接入 tmux.conf + 装 Claude hooks + 重载，全干了：
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/maoxiaoke/tmux-agents/main/install.sh | bash
+```
+
+装完进 tmux、新开一个 claude 会话即可。卸载：`~/.tmux/plugins/tmux-agents/scripts/uninstall.sh`。
+
+<details><summary>不放心 curl｜bash？先看脚本再跑（推荐）</summary>
+
+```sh
+git clone https://github.com/maoxiaoke/tmux-agents ~/.tmux/plugins/tmux-agents
+~/.tmux/plugins/tmux-agents/install.sh
+```
+</details>
+
+---
+
+或者按下面分步来（想用 TPM、或想清楚每步在做什么）。装两样：**For Agent**（让 Claude 上报状态）+ **插件**（把状态显示在状态栏，选「有 TPM」或「没有 TPM」）。
 
 ### For Agent — 让 Claude 上报状态
 
