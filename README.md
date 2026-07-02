@@ -3,7 +3,7 @@
 在 tmux 状态栏里常驻显示正在运行的 **AI coding agent**（Claude Code、aider、codex…），
 带 **active / working / needs-you / idle** 状态，点击或弹窗即可跳到对应 pane。
 
-把 [herdr](https://herdr.dev) 那种「agent 仪表盘」体验做成一个**纯 tmux 插件** —— 零迁移、终端无关、可改、开源。
+一个**纯 tmux 插件**把散落在各 window / session 里的 agent 汇成一条状态栏 —— 零迁移、终端无关、可改、开源。
 
 ![tmux-agents 状态栏：idle / working / needs-you / active 四态一览](docs/assets/statusbar.png)
 
@@ -140,7 +140,7 @@ hook 进程继承所在 pane 的 `$TMUX_PANE`，所以天然知道是哪个 agen
 
 ## 卸载
 
-一键清干净（移除 hooks + 缓存 + 运行期键位/状态栏改动，保留 herdr/melo 等其它 hook）：
+一键清干净（移除 hooks + 缓存 + 运行期键位/状态栏改动，保留你已有的其它 hook）：
 
 ```sh
 /path/to/tmux-agents/scripts/uninstall.sh
