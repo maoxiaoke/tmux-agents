@@ -35,23 +35,20 @@ run-shell /path/to/tmux-agents/agents.tmux
 
 ---
 
-## 3. 把 agent 列表放到状态栏
+## 3. agent 列表放哪
 
-在状态栏任意位置放占位符 **`#{agents}`**，插件加载时会替换成实际内容。
+默认挂在 `status-right`。换位置只需一行：
 
-**放右边：**
+```tmux
+set -g @agents-position center   # right（默认）| center | left
+```
+
+`center` 会保留左侧窗口列表、右侧时钟，把 agent 列表放中间（居中需 tmux ≥ 3.3；那条复杂的 `status-format` 由插件内部生成，你不用管）。
+
+想**精确**控制，就自己在 `status-left` / `status-right` / `status-format` 里放占位符 `#{agents}`：
+
 ```tmux
 set -g status-right '#{agents} | %H:%M '
-```
-
-**放左边：**
-```tmux
-set -g status-left '#S #{agents}'
-```
-
-**居中**（需要 tmux ≥ 3.3，自定义 `status-format`）：
-```tmux
-set -g status-format[0] '#[align=left]#{T:status-left}#[align=centre]#{agents}#[align=right]#{T:status-right}'
 ```
 
 > 改完 `tmux source-file ~/.tmux.conf` 或重开 tmux。
@@ -118,7 +115,8 @@ tmux 选项（写在 `.tmux.conf`，放在加载插件之前）：
 
 | 选项 | 默认 | 说明 |
 |---|---|---|
-| `@agents-auto` | `on` | 没写 `#{agents}` 占位时自动挂到 `status-right`；`off` 则只认占位符 |
+| `@agents-position` | `right` | 自动放置位置：`right` / `center` / `left`（`center` 保留窗口列表+时钟） |
+| `@agents-auto` | `on` | 没写 `#{agents}` 占位时自动挂；`off` 则只认占位符 |
 | `@agents-auto-hooks` | `off` | `on` → 插件加载时自动装 Claude hooks（幂等、无变化不写） |
 | `@agents-interval` | `2` | 状态栏刷新秒数（影响 spinner 动画与时长 tick） |
 | `@agents-key` | `a` | `prefix + <key>` 唤起弹窗菜单 |

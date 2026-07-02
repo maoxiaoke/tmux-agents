@@ -35,10 +35,22 @@ for o in status-left status-right 'status-format[0]' 'status-format[1]' 'status-
     *"$CURRENT_DIR/scripts/bar.sh"*) replaced=1 ;;   # 已就位（防重复追加）
   esac
 done
-# 没写占位符也没就位 → 自动挂到 status-right 开头（@agents-auto off 可关）
-if [ "$replaced" = 0 ] && [ "$(opt @agents-auto)" != off ]; then
-  cur="$(opt status-right)"
-  tmux set -g status-right "$SEG $cur"
+# 没写占位符时，按 @agents-position 自动放置（right 默认 / center / left）
+if [ "$replaced" = 0 ]; then
+  POS="$(opt @agents-position)"; [ -z "$POS" ] && POS=right
+  case "$POS" in
+    center)
+      # 居中：保留 session + 窗口列表在左、时钟在右，agent 列表居中。
+      # 这段模板由插件生成，用户无需关心（这就是「居中」该有的复杂度——藏在这里）。
+      tmux set -g status-format[0] "#[align=left range=left #{E:status-left-style}]#[push-default]#{T;=/#{status-left-length}:status-left}#[pop-default]#[norange default]#[list=on align=left]#[list=left-marker]<#[list=right-marker]>#[list=on]#{W:#[range=window|#{window_index} #{E:window-status-style}#{?#{&&:#{window_last_flag},#{!=:#{E:window-status-last-style},default}}, #{E:window-status-last-style},}#{?#{&&:#{window_bell_flag},#{!=:#{E:window-status-bell-style},default}}, #{E:window-status-bell-style},#{?#{&&:#{||:#{window_activity_flag},#{window_silence_flag}},#{!=:#{E:window-status-activity-style},default}}, #{E:window-status-activity-style},}}]#[push-default]#{T:window-status-format}#[pop-default]#[norange default]#{?loop_last_flag,,#{window-status-separator}},#[range=window|#{window_index} list=focus #{?#{!=:#{E:window-status-current-style},default},#{E:window-status-current-style},#{E:window-status-style}}#{?#{&&:#{window_last_flag},#{!=:#{E:window-status-last-style},default}}, #{E:window-status-last-style},}#{?#{&&:#{window_bell_flag},#{!=:#{E:window-status-bell-style},default}}, #{E:window-status-bell-style},#{?#{&&:#{||:#{window_activity_flag},#{window_silence_flag}},#{!=:#{E:window-status-activity-style},default}}, #{E:window-status-activity-style},}}]#[push-default]#{T:window-status-current-format}#[pop-default]#[norange list=on default]#{?loop_last_flag,,#{window-status-separator}}}#[nolist]#[align=centre]${SEG}#[nolist align=right range=right #{E:status-right-style}]#[push-default]#{T;=/#{status-right-length}:status-right}#[pop-default]#[norange default]"
+      ;;
+    left)
+      tmux set -g status-left "$(opt status-left) $SEG"
+      ;;
+    *)  # right（默认）：挂到 status-right 开头
+      [ "$(opt @agents-auto)" != off ] && tmux set -g status-right "$SEG $(opt status-right)"
+      ;;
+  esac
 fi
 
 # 可选：自动装 Claude Code hooks（@agents-auto-hooks on）。幂等 + 无变化不写，后台执行。

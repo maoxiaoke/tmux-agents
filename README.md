@@ -63,7 +63,13 @@ Agents report state through Claude Code hooks (installed automatically above, or
 `PreToolUse`/`Notification` matchers are load-bearing — see [docs/USAGE.md](docs/USAGE.md) for the full config and rationale.
 </details>
 
-The agent list mounts at the right of `status-right` by default. To place it yourself, drop the `#{agents}` placeholder into `status-left`, `status-right`, or `status-format`.
+Placement: it mounts to `status-right` by default. For left or **centered** (keeps your window list + clock), just:
+
+```tmux
+set -g @agents-position center   # right (default) | center | left
+```
+
+Or drop the `#{agents}` placeholder anywhere in `status-left` / `status-right` / `status-format` to control it exactly.
 
 ## Update
 
@@ -97,7 +103,8 @@ set -g @agents-interval   1     # status refresh seconds (default: 2)
 
 | Option | Default | Description |
 |---|---|---|
-| `@agents-auto` | `on` | Auto-mount to `status-right` when no `#{agents}` placeholder is set |
+| `@agents-position` | `right` | Where to auto-place the list: `right` / `center` / `left` (centered keeps window list + clock) |
+| `@agents-auto` | `on` | Auto-mount when no `#{agents}` placeholder is set (`off` = placeholder only) |
 | `@agents-auto-hooks` | `off` | Install Claude Code hooks on plugin load (idempotent) |
 | `@agents-interval` | `2` | Status refresh interval (drives the spinner / elapsed time) |
 | `@agents-key` | `a` | `prefix + <key>` → picker |
